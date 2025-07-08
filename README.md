@@ -2,7 +2,7 @@
 
 Pulls from OP.GG API and updates a Google Sheets spreadsheet automatically with team standings + kill counts with some light user guidance
 
-## Installation
+## Setup
 
 1. Install [Node v24.3.0](https://nodejs.org/en/download/current)
    1. Check version with `node --version`
@@ -10,3 +10,5 @@ Pulls from OP.GG API and updates a Google Sheets spreadsheet automatically with 
    1. `npm install --global yarn`
    2. Check version with `yarn --version`
 3. Install project dependencies by running `yarn`
+4. Request a credentials key from a project maintainer
+   1. Place this `credentials.json` file at the root of your project (e.g. next to `package.json`)
