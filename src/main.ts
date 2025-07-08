@@ -1,9 +1,14 @@
 import { google } from "googleapis"
 
 import { savePlayerId } from "./cache.ts"
-import { getMatchesFromPlayer, getPlayer } from "./fetch.ts"
+import {
+	getMatchesFromPlayer,
+	getMatchesWithAllPlayers,
+	getPlayer,
+} from "./fetch.ts"
 import { authorize } from "./googleAuth.ts"
-import { checkMatch, promptPlayer } from "./prompts.ts"
+import { checkMatch, promptAddPlayer, promptPlayer } from "./prompts.ts"
+import type { TPlayer } from "./schema/Player.ts"
 import { getTeamNames } from "./sheets.ts"
 
 const main = async () => {
@@ -11,15 +16,29 @@ const main = async () => {
 	const sheets = google.sheets({ version: "v4", auth })
 	const teamNames = await getTeamNames(sheets)
 
-	const { playerTag, playerUuid } = await promptPlayer()
-	const player = await getPlayer(playerUuid)
-	await savePlayerId(playerTag, playerUuid)
+	const players: TPlayer[] = []
+	while (true) {
+		const { playerTag, playerUuid } = await promptPlayer()
+		const player = await getPlayer(playerUuid)
+		await savePlayerId(playerTag, playerUuid)
 
-	const customMatches = await getMatchesFromPlayer(player)
+		players.push(player)
 
-	console.log(`Iterating through latest matches from player ${playerTag}`)
+		const addAnotherPlayer = await promptAddPlayer()
+		if (!addAnotherPlayer) {
+			break
+		}
+	}
+
+	const customMatches = await getMatchesFromPlayer(players[0])
+	const customMatchesWithAllPlayers = getMatchesWithAllPlayers(
+		customMatches,
+		players.slice(1)
+	)
+
+	console.log(`Iterating through latest matches with inputted players`)
 	let nextMatchNumber = 1
-	for (const match of customMatches) {
+	for (const match of customMatchesWithAllPlayers) {
 		nextMatchNumber = await checkMatch({
 			match,
 			nextMatchNumber,

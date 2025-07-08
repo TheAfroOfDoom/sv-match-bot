@@ -36,3 +36,17 @@ export const getMatchesFromPlayer = async (player: TPlayer) => {
 	const matches = await Promise.all(matchIds.map((id) => getMatch(id)))
 	return matches.sort((a, b) => a.matchEnd.getTime() - b.matchEnd.getTime())
 }
+
+export const getMatchesWithAllPlayers = (
+	matches: Match[],
+	players: TPlayer[]
+): Match[] =>
+	matches.filter((match) =>
+		players.every((player) => matchIncludesPlayer(match, player))
+	)
+
+const matchIncludesPlayer = (match: Match, player: TPlayer): boolean =>
+	match.matchPlayers.some(
+		(matchPlayer) =>
+			matchPlayer.player_id_encoded === player.data[0].player_id_encoded
+	)

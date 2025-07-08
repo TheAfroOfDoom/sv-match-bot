@@ -18,6 +18,17 @@ import {
 	SuperviveUUID,
 } from "./utils.ts"
 
+const formatTextToConfirmation = (response: string) => {
+	const responseLower = response.toLowerCase()
+	if (responseLower === "stop") {
+		process.exit(0)
+	} else if (responseLower === "y") {
+		return true
+	} else {
+		return false
+	}
+}
+
 export const checkMatch = async ({
 	match,
 	nextMatchNumber,
@@ -54,16 +65,7 @@ export const checkMatch = async ({
 			type: "text",
 			name: "confirm",
 			message: "Proceed with match? (y/n/stop)",
-			format: (response: string) => {
-				const responseLower = response.toLowerCase()
-				if (responseLower === "stop") {
-					process.exit(0)
-				} else if (responseLower === "y") {
-					return true
-				} else {
-					return false
-				}
-			},
+			format: formatTextToConfirmation,
 		},
 		{ onCancel: () => process.exit(0) }
 	)
@@ -148,4 +150,17 @@ export const promptPlayer = async () => {
 		playerTag,
 		playerUuid,
 	}
+}
+
+export const promptAddPlayer = async (): Promise<boolean> => {
+	const playerIdResponse = await prompts(
+		{
+			type: "text",
+			name: "confirm",
+			message: "Filter matches on additional players?",
+			format: formatTextToConfirmation,
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return playerIdResponse.confirm
 }
