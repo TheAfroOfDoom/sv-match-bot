@@ -18,7 +18,7 @@ import {
 	SuperviveUUID,
 } from "./utils.ts"
 
-const formatTextToConfirmation = (response: string) => {
+const formatConfirmationText = (response: string) => {
 	const responseLower = response.toLowerCase()
 	if (responseLower === "stop") {
 		process.exit(0)
@@ -65,7 +65,7 @@ export const checkMatch = async ({
 			type: "text",
 			name: "confirm",
 			message: "Proceed with match? (y/n/stop)",
-			format: formatTextToConfirmation,
+			format: formatConfirmationText,
 		},
 		{ onCancel: () => process.exit(0) }
 	)
@@ -158,7 +158,7 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 			type: "text",
 			name: "confirm",
 			message: "Filter matches on additional players?",
-			format: formatTextToConfirmation,
+			format: formatConfirmationText,
 		},
 		{ onCancel: () => process.exit(0) }
 	)
