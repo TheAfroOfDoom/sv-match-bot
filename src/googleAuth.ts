@@ -17,7 +17,7 @@ async function loadSavedCredentialsIfExist() {
 		const content = await fs.readFile(TOKEN_PATH, "utf-8")
 		const credentials = JSON.parse(content)
 		return google.auth.fromJSON(credentials) as unknown as OAuth2Client
-	} catch (err) {
+	} catch {
 		return null
 	}
 }
