@@ -13,13 +13,15 @@ import { gameNumToRange } from "./utils.ts"
 
 export const checkMatch = async ({
 	match,
+	nextMatchNumber,
 	sheets,
 	teamNames,
 }: {
 	match: Match
+	nextMatchNumber: number
 	sheets: Sheets
 	teamNames: string[]
-}) => {
+}): Promise<number> => {
 	const matchStats = aggregateMatchStats(match, [
 		sumTeamKills,
 		getTeamPlacement,
@@ -47,15 +49,18 @@ export const checkMatch = async ({
 	})
 
 	if (!matchResponse.confirm) {
-		return
+		return nextMatchNumber
 	}
 
 	const matchNumResponse = await prompts({
 		type: "number",
 		name: "number",
 		message: "Match number?",
+		initial: nextMatchNumber,
 	})
 	await trackMatch({ matchStats, matchNumber: matchNumResponse.number, sheets })
+
+	return matchNumResponse.number + 1
 }
 
 export const trackMatch = async ({

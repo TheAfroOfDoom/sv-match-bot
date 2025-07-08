@@ -14,14 +14,19 @@ const main = async () => {
 	const auth = await authorize()
 	const sheets = google.sheets({ version: "v4", auth })
 	const teamNames = await getTeamNames(sheets)
-	console.log(teamNames)
 
 	const player = await getPlayer(playerId)
 	const customMatches = await getMatchesFromPlayer(player)
 
 	console.log(`Iterating through latest matches from player ${playerTag}`)
+	let nextMatchNumber = 1
 	for (const match of customMatches) {
-		await checkMatch({ match, sheets, teamNames })
+		nextMatchNumber = await checkMatch({
+			match,
+			nextMatchNumber,
+			sheets,
+			teamNames,
+		})
 	}
 }
 
