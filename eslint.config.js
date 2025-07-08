@@ -18,6 +18,7 @@ export default tseslint.config([
 		rules: {
 			"@typescript-eslint/no-explicit-any": "off",
 			"@typescript-eslint/consistent-type-imports": "error",
+			"import/extensions": ["error", "ignorePackages"],
 			"import/first": "error",
 			"import/newline-after-import": "error",
 			"import/no-duplicates": "error",
