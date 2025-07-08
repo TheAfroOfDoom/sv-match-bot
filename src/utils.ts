@@ -17,7 +17,7 @@ export class SuperviveUUID {
 	}
 }
 
-export const gameNumToRange = (gameNum) => {
+export const gameNumToRange = (gameNum: number) => {
 	// HARDCODED
 	// Sheet supports games 1-8
 	if (gameNum < 1 || gameNum > 8) {
