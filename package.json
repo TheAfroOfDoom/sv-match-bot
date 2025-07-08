@@ -8,8 +8,13 @@
 	"engines": {
 		"node": ">=v24.3.0"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@google-cloud/local-auth": "^3.0.1",
+		"googleapis": "^150.0.1",
+		"typescript": "^5.8.3"
+	},
 	"devDependencies": {
+		"@types/node": "^24.0.10",
 		"prettier": "^3.6.2"
 	}
 }
