@@ -1,5 +1,5 @@
 import { existsSync } from "fs"
-import { readFile, writeFile } from "fs/promises"
+import { mkdir, readFile, writeFile } from "fs/promises"
 import path from "path"
 
 import { SuperviveUUID } from "./utils.ts"
@@ -9,6 +9,10 @@ const playerIdCache = "playerIds.json"
 
 // Create file if doesn't exist
 const ensureExists = async (filePath: string, val: string) => {
+	if (!existsSync(path.resolve(cacheDir))) {
+		await mkdir(path.resolve(cacheDir))
+	}
+
 	if (!existsSync(filePath)) {
 		await writeFile(filePath, val)
 	}
