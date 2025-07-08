@@ -12,3 +12,7 @@ Pulls from OP.GG API and updates a Google Sheets spreadsheet automatically with 
 3. Install project dependencies by running `yarn`
 4. Request a credentials key from a project maintainer
    1. Place this `credentials.json` file at the root of your project (e.g. next to `package.json`)
+
+## Usage
+
+`node src/main.ts`
