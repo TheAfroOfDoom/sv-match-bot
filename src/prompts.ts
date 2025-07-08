@@ -37,11 +37,15 @@ export const checkMatch = async ({
 	match,
 	nextMatchNumber,
 	sheets,
+	sheetName,
+	spreadsheetId,
 	teamNames,
 }: {
 	match: Match
 	nextMatchNumber: number
 	sheets: Sheets
+	sheetName: string
+	spreadsheetId: string
 	teamNames: string[]
 }): Promise<number> => {
 	const matchStats = aggregateMatchStats(match, [
@@ -88,7 +92,13 @@ export const checkMatch = async ({
 		},
 		{ onCancel: () => process.exit(0) }
 	)
-	await trackMatch({ matchStats, matchNumber: matchNumResponse.number, sheets })
+	await trackMatch({
+		matchStats,
+		matchNumber: matchNumResponse.number,
+		sheets,
+		sheetName,
+		spreadsheetId,
+	})
 
 	return matchNumResponse.number + 1
 }
@@ -97,14 +107,18 @@ export const trackMatch = async ({
 	matchStats,
 	matchNumber,
 	sheets,
+	sheetName,
+	spreadsheetId,
 }: {
 	matchStats: any
 	matchNumber: number
 	sheets: Sheets
+	sheetName: string
+	spreadsheetId: string
 }) => {
 	const values = matchStats.map((team) => [team.placementReadable, team.kills])
-	const range = gameNumToRange(matchNumber)
-	await updateSheetRows(sheets, range, values)
+	const range = `'${sheetName}'!${gameNumToRange(matchNumber)}`
+	await updateSheetRows({ sheets, spreadsheetId, range, values })
 	console.log(`Successfully updated match ${matchNumber}`)
 }
 
@@ -169,4 +183,30 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 		{ onCancel: () => process.exit(0) }
 	)
 	return playerIdResponse.confirm
+}
+
+export const promptSpreadsheetId = async (): Promise<string> => {
+	const { id } = await prompts(
+		{
+			type: "text",
+			name: "id",
+			message: "Google Sheets spreadsheet ID:",
+			initial: "1vGJwvRqUSZhF2BnJf5Kf1Rcjzcfuwg0zqVEoW32oNCI",
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return id
+}
+
+export const promptSheetName = async (): Promise<string> => {
+	const { name } = await prompts(
+		{
+			type: "text",
+			name: "name",
+			message: "Google Sheets sheet name:",
+			initial: "SheetTest",
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return name
 }

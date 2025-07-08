@@ -7,14 +7,24 @@ import {
 	getPlayer,
 } from "./fetch.ts"
 import { authorize } from "./googleAuth.ts"
-import { checkMatch, promptAddPlayer, promptPlayer } from "./prompts.ts"
+import {
+	checkMatch,
+	promptAddPlayer,
+	promptPlayer,
+	promptSheetName,
+	promptSpreadsheetId,
+} from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { getTeamNames } from "./sheets.ts"
 
 const main = async () => {
 	const auth = await authorize()
 	const sheets = google.sheets({ version: "v4", auth })
-	const teamNames = await getTeamNames(sheets)
+
+	const spreadsheetId = await promptSpreadsheetId()
+	const sheetName = await promptSheetName()
+
+	const teamNames = await getTeamNames(sheets, sheetName, spreadsheetId)
 
 	const players: TPlayer[] = []
 	while (true) {
@@ -43,6 +53,8 @@ const main = async () => {
 			match,
 			nextMatchNumber,
 			sheets,
+			sheetName,
+			spreadsheetId,
 			teamNames,
 		})
 	}
