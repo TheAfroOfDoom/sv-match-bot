@@ -45,6 +45,7 @@ const placementToReadable = (placement) => {
 		"10th",
 		"11th",
 		"12th",
+		"13th",
 	]
 	const idx = Number(placement) - 1
 	return map[idx]
