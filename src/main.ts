@@ -1,6 +1,7 @@
-import { getTeamNames } from "./sheets.ts"
-import { authorize } from "./googleAuth.ts"
 import { google } from "googleapis"
+
+import { authorize } from "./googleAuth.ts"
+import { getTeamNames } from "./sheets.ts"
 
 const main = async () => {
 	const auth = await authorize()

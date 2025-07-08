@@ -1,4 +1,4 @@
-import { sheets_v4 } from "googleapis"
+import type { sheets_v4 } from "googleapis"
 
 type Sheets = sheets_v4.Sheets
 

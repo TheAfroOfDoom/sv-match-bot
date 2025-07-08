@@ -1,9 +1,9 @@
+import { authenticate } from "@google-cloud/local-auth"
 import { promises as fs } from "fs"
+import type { OAuth2Client } from "google-auth-library"
+import { google } from "googleapis"
 import path from "path"
 import process from "process"
-import { authenticate } from "@google-cloud/local-auth"
-import { google } from "googleapis"
-import type { OAuth2Client } from "google-auth-library"
 
 // TODO: this should be `https://www.googleapis.com/auth/drive.file`
 // https://developers.google.com/identity/protocols/oauth2/scopes#sheets
