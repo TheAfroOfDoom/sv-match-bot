@@ -1,0 +1,12 @@
+{
+	"name": "sv-match-bot",
+	"version": "1.0.0",
+	"main": "main.js",
+	"author": "Afro <tehafroofdoom@gmail.com>",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"node": ">=v24.3.0"
+	},
+	"dependencies": {}
+}

@@ -1,0 +1,12 @@
+# SV match bot
+
+Pulls from OP.GG API and updates a Google Sheets spreadsheet automatically with team standings + kill counts with some light user guidance
+
+## Installation
+
+1. Install [Node v24.3.0](https://nodejs.org/en/download/current)
+   1. Check version with `node --version`
+2. Install [Yarn](https://classic.yarnpkg.com/en/docs/install)
+   1. `npm install --global yarn`
+   2. Check version with `yarn --version`
+3. Install project dependencies by running `yarn`
