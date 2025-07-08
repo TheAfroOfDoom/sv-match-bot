@@ -57,6 +57,7 @@ export const checkMatch = async ({
 		teamStats.teamName = teamNames[idx]
 	}
 
+	console.log()
 	console.log("Match info:")
 	for (const teamStats of _.cloneDeep(matchStats).sort(
 		(a, b) => a.placement - b.placement
