@@ -1,6 +1,7 @@
 import _ from "lodash"
 import prompts from "prompts"
 
+import { getPlayerId } from "./cache.ts"
 import type { Match } from "./fetch.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
 import {
@@ -141,7 +142,8 @@ const promptPlayerId = async (playerTag: string): Promise<SuperviveUUID> => {
 
 export const promptPlayer = async () => {
 	const playerTag = await promptPlayerTag()
-	const playerUuid = await promptPlayerId(playerTag)
+	const playerUuid =
+		(await getPlayerId(playerTag)) ?? (await promptPlayerId(playerTag))
 	return {
 		playerTag,
 		playerUuid,
