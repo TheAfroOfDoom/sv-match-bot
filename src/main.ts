@@ -1,5 +1,6 @@
 import { google } from "googleapis"
 
+import { savePlayerId } from "./cache.ts"
 import { getMatchesFromPlayer, getPlayer } from "./fetch.ts"
 import { authorize } from "./googleAuth.ts"
 import { checkMatch, promptPlayer } from "./prompts.ts"
@@ -12,6 +13,8 @@ const main = async () => {
 
 	const { playerTag, playerUuid } = await promptPlayer()
 	const player = await getPlayer(playerUuid)
+	await savePlayerId(playerTag, playerUuid)
+
 	const customMatches = await getMatchesFromPlayer(player)
 
 	console.log(`Iterating through latest matches from player ${playerTag}`)
