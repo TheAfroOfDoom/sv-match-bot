@@ -128,7 +128,8 @@ const promptPlayerTag = async (): Promise<string> => {
 		{
 			type: "text",
 			name: "playerTag",
-			message: "Enter a player that played in every match (e.g. afro#doom)",
+			message: "Enter a player that played in every match",
+			initial: "afro#doom",
 			validate: (val: string) => val.length > 0 && val.includes("#"),
 		},
 		{ onCancel: () => process.exit(0) }
