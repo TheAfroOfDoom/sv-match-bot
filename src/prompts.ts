@@ -29,6 +29,10 @@ const formatConfirmationText = (response: string) => {
 	}
 }
 
+const validateConfirmationText = (response: string) => {
+	return ["stop", "y", "n"].includes(response.toLowerCase())
+}
+
 export const checkMatch = async ({
 	match,
 	nextMatchNumber,
@@ -66,6 +70,7 @@ export const checkMatch = async ({
 			name: "confirm",
 			message: "Proceed with match? (y/n/stop)",
 			format: formatConfirmationText,
+			validate: validateConfirmationText,
 		},
 		{ onCancel: () => process.exit(0) }
 	)
@@ -157,8 +162,9 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 		{
 			type: "text",
 			name: "confirm",
-			message: "Filter matches on additional players?",
+			message: "Filter matches on additional players? (y/n/stop)",
 			format: formatConfirmationText,
+			validate: validateConfirmationText,
 		},
 		{ onCancel: () => process.exit(0) }
 	)
