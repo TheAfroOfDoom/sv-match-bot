@@ -23,7 +23,7 @@ async function loadSavedCredentialsIfExist() {
 }
 
 /** Serializes credentials to a file compatible with GoogleAuth.fromJSON. */
-async function saveCredentials(client: OAuth2Client) {
+async function saveCredentials(client) {
 	const content = await fs.readFile(CREDENTIALS_PATH, "utf-8")
 	const keys = JSON.parse(content)
 	const key = keys.installed || keys.web
@@ -34,6 +34,7 @@ async function saveCredentials(client: OAuth2Client) {
 		refresh_token: client.credentials.refresh_token,
 	})
 	await fs.writeFile(TOKEN_PATH, payload)
+	return payload
 }
 
 /** Load or request or authorization to call APIs.*/
@@ -42,12 +43,15 @@ export async function authorize() {
 	if (credentials !== null) {
 		return credentials
 	}
-	const client = (await authenticate({
+
+	const client = await authenticate({
 		scopes: SCOPES,
 		keyfilePath: CREDENTIALS_PATH,
-	})) as unknown as OAuth2Client
+	})
+
 	if (client.credentials) {
-		await saveCredentials(client)
+		const credentials = JSON.parse(await saveCredentials(client))
+		return google.auth.fromJSON(credentials) as unknown as OAuth2Client
 	}
-	return client
+	throw new Error("Failed to authenticate with Google OAuth2")
 }
