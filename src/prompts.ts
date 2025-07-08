@@ -42,22 +42,38 @@ export const checkMatch = async ({
 	}
 	console.log()
 
-	const matchResponse = await prompts({
-		type: "confirm",
-		name: "confirm",
-		message: "Proceed with match?",
-	})
+	const matchResponse = await prompts(
+		{
+			type: "text",
+			name: "confirm",
+			message: "Proceed with match? (y/n/stop)",
+			format: (response: string) => {
+				const responseLower = response.toLowerCase()
+				if (responseLower === "stop") {
+					process.exit(0)
+				} else if (responseLower === "y") {
+					return true
+				} else {
+					return false
+				}
+			},
+		},
+		{ onCancel: () => process.exit(0) }
+	)
 
 	if (!matchResponse.confirm) {
 		return nextMatchNumber
 	}
 
-	const matchNumResponse = await prompts({
-		type: "number",
-		name: "number",
-		message: "Match number?",
-		initial: nextMatchNumber,
-	})
+	const matchNumResponse = await prompts(
+		{
+			type: "number",
+			name: "number",
+			message: "Match number?",
+			initial: nextMatchNumber,
+		},
+		{ onCancel: () => process.exit(0) }
+	)
 	await trackMatch({ matchStats, matchNumber: matchNumResponse.number, sheets })
 
 	return matchNumResponse.number + 1
