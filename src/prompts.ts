@@ -9,7 +9,13 @@ import {
 	getTeamPlacement,
 	sumTeamKills,
 } from "./stats.ts"
-import { gameNumToRange } from "./utils.ts"
+import {
+	gameNumToRange,
+	insertHyphensIntoUuid,
+	isValidUuid,
+	playerTagToOpggUrl,
+	SuperviveUUID,
+} from "./utils.ts"
 
 export const checkMatch = async ({
 	match,
@@ -92,4 +98,52 @@ export const trackMatch = async ({
 	const range = gameNumToRange(matchNumber)
 	await updateSheetRows(sheets, range, values)
 	console.log(`Successfully updated match ${matchNumber}`)
+}
+
+const promptPlayerTag = async (): Promise<string> => {
+	const playerTagResponse = await prompts(
+		{
+			type: "text",
+			name: "playerTag",
+			message: "Enter a player that played in every match (e.g. afro#doom)",
+			validate: (val: string) => val.length > 0 && val.includes("#"),
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return playerTagResponse.playerTag
+}
+
+const promptPlayerId = async (playerTag: string): Promise<SuperviveUUID> => {
+	console.log(
+		"Retrieve the player's UUID from the following URL (see README for details)"
+	)
+	console.log(playerTagToOpggUrl(playerTag))
+
+	const playerIdResponse = await prompts(
+		{
+			type: "text",
+			name: "uuid",
+			message: `${playerTag}'s UUID`,
+			validate: (val: string) =>
+				isValidUuid(val, { hyphens: true }) ||
+				isValidUuid(val, { hyphens: false }),
+			format: (val: string) => {
+				if (isValidUuid(val, { hyphens: false })) {
+					return insertHyphensIntoUuid(val)
+				}
+				return val
+			},
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return new SuperviveUUID(playerIdResponse.uuid)
+}
+
+export const promptPlayer = async () => {
+	const playerTag = await promptPlayerTag()
+	const playerUuid = await promptPlayerId(playerTag)
+	return {
+		playerTag,
+		playerUuid,
+	}
 }
