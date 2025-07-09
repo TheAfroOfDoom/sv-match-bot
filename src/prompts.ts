@@ -212,3 +212,19 @@ export const promptSheetName = async (): Promise<string> => {
 	)
 	return name
 }
+
+export const promptMatchSortOrder = async (): Promise<boolean> => {
+	const { sortNewestFirst } = await prompts(
+		{
+			type: "text",
+			name: "sortNewestFirst",
+			message: "Match display order? (newest/oldest)",
+			initial: "newest",
+			format: (response: string) => response.toLowerCase() === "newest",
+			validate: (response: string) =>
+				["newest", "oldest"].includes(response.toLowerCase()),
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return sortNewestFirst
+}

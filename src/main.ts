@@ -10,6 +10,7 @@ import { authorize } from "./googleAuth.ts"
 import {
 	checkMatch,
 	promptAddPlayer,
+	promptMatchSortOrder,
 	promptPlayer,
 	promptSheetName,
 	promptSpreadsheetId,
@@ -40,7 +41,8 @@ const main = async () => {
 		}
 	}
 
-	const customMatches = await getMatchesFromPlayer(players[0])
+	const sortNewestFirst = await promptMatchSortOrder()
+	const customMatches = await getMatchesFromPlayer(players[0], sortNewestFirst)
 	const customMatchesWithAllPlayers = getMatchesWithAllPlayers(
 		customMatches,
 		players.slice(1)
