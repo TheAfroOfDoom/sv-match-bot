@@ -30,7 +30,7 @@ const main = async () => {
 	const players: TPlayer[] = []
 	while (true) {
 		const { playerTag, playerUuid } = await promptPlayer()
-		const player = await getPlayer(playerUuid)
+		const player = await getPlayer(playerUuid, playerTag)
 		await savePlayerId(playerTag, playerUuid)
 
 		players.push(player)

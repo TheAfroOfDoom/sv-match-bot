@@ -19,11 +19,20 @@ export const getMatch = async (svUuid: SuperviveUUID): Promise<Match> => {
 	}
 }
 
-export const getPlayer = async (svUuid: SuperviveUUID): Promise<TPlayer> => {
+export const getPlayer = async (
+	svUuid: SuperviveUUID,
+	playerTag: string
+): Promise<TPlayer> => {
 	const param = svUuid.getRaw()
 	const playerUrl = `https://supervive.op.gg/api/players/steam-${param}/matches`
 	const response = await fetch(playerUrl)
-	return Player.parse(await response.json())
+	const result = Player.safeParse(await response.json())
+	if (!result.success) {
+		throw new Error(
+			`Player ${playerTag} has incomplete data (they're out, but the game might still be going?)`
+		)
+	}
+	return result.data
 }
 
 const getMatchIdsFromPlayer = (player: TPlayer): SuperviveUUID[] => {
