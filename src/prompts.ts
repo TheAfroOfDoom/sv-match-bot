@@ -179,6 +179,7 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 			type: "text",
 			name: "confirm",
 			message: "Filter matches on additional players? (y/n/stop)",
+			initial: "n",
 			format: formatConfirmationText,
 			validate: validateConfirmationText,
 		},
