@@ -33,7 +33,9 @@ async function getSheetRows(
 	}
 	const vals = res.data.values
 	if (vals === null || vals === undefined) {
-		throw new Error("Received undefined sheet-row data")
+		throw new Error(
+			"Received undefined sheet-row data (did you remember to input team names?)"
+		)
 	}
 	return vals as string[][]
 }
