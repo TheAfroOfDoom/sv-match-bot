@@ -48,7 +48,7 @@ export const checkMatch = async ({
 	sheetName: string
 	spreadsheetId: string
 	teamNames: string[]
-}): Promise<number> => {
+}): Promise<boolean> => {
 	const matchStats = aggregateMatchStats(match, [
 		sumTeamKills,
 		getTeamPlacement,
@@ -89,7 +89,7 @@ export const checkMatch = async ({
 	)
 
 	if (!matchResponse.confirm) {
-		return nextMatchNumber
+		return false
 	}
 
 	const matchNumResponse = await prompts(
@@ -109,7 +109,7 @@ export const checkMatch = async ({
 		spreadsheetId,
 	})
 
-	return matchNumResponse.number + 1
+	return true
 }
 
 export const trackMatch = async ({

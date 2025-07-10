@@ -49,9 +49,9 @@ const main = async () => {
 	)
 
 	console.log(`Iterating through latest matches with inputted players`)
-	let nextMatchNumber = 1
+	let nextMatchNumber = sortNewestFirst ? 6 : 1
 	for (const match of customMatchesWithAllPlayers) {
-		nextMatchNumber = await checkMatch({
+		const didTrackMatch = await checkMatch({
 			match,
 			nextMatchNumber,
 			sheets,
@@ -59,6 +59,9 @@ const main = async () => {
 			spreadsheetId,
 			teamNames,
 		})
+		if (didTrackMatch) {
+			nextMatchNumber += sortNewestFirst ? -1 : 1
+		}
 	}
 }
 
