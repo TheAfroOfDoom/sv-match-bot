@@ -5,33 +5,42 @@ import path from "path"
 import { SuperviveUUID } from "./utils.ts"
 
 const cacheDir = "cache"
-const playerIdCache = "playerIds.json"
+const playerIdCachePath = "playerIds.json"
 
 // Create file if doesn't exist
-const ensureExists = async (filePath: string, val: string) => {
+const ensureExists = async (filePath: string, defaultVal: string) => {
 	if (!existsSync(path.resolve(cacheDir))) {
 		await mkdir(path.resolve(cacheDir))
 	}
 
 	if (!existsSync(filePath)) {
-		await writeFile(filePath, val)
+		await writeFile(filePath, defaultVal)
 	}
 }
 
-const readPlayerIdCache = async () => {
-	const filePath = path.resolve(cacheDir, playerIdCache)
+const readCache = async (cachePath: string) => {
+	const filePath = path.resolve(cacheDir, cachePath)
 	await ensureExists(filePath, "{}")
 	const content = await readFile(filePath, "utf8")
 
-	let playerIds: { [playerTag: string]: string | undefined }
+	let cacheResult
 	try {
-		playerIds = JSON.parse(content)
+		cacheResult = JSON.parse(content)
 	} catch (e) {
 		console.error(e)
-		throw new Error("Malformed player ID cache")
+		throw new Error(`Malformed cache: ${filePath}`)
 	}
-	return playerIds
+	return cacheResult
 }
+
+const writeCache = async (cachePath: string, val: unknown) => {
+	const filePath = path.resolve(cacheDir, cachePath)
+	await writeFile(filePath, JSON.stringify(val, null, 4))
+}
+
+const readPlayerIdCache = async (): Promise<{
+	[playerTag: string]: string | undefined
+}> => await readCache(playerIdCachePath)
 
 export const getPlayerId = async (
 	playerTag: string
@@ -50,7 +59,5 @@ export const savePlayerId = async (
 ) => {
 	const playerIds = await readPlayerIdCache()
 	playerIds[playerTag] = playerUuid.getFormatted()
-
-	const filePath = path.resolve(cacheDir, playerIdCache)
-	await writeFile(filePath, JSON.stringify(playerIds, null, 4))
+	await writeCache(playerIdCachePath, playerIds)
 }
