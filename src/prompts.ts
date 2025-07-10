@@ -1,3 +1,4 @@
+import chalk from "chalk"
 import _ from "lodash"
 import prompts from "prompts"
 
@@ -21,17 +22,19 @@ import {
 
 const formatConfirmationText = (response: string) => {
 	const responseLower = response.toLowerCase()
-	if (responseLower === "stop") {
+	if (["stop", "s"].includes(responseLower)) {
 		process.exit(0)
-	} else if (responseLower === "y") {
+	} else if (["yes", "y"].includes(responseLower)) {
 		return true
 	} else {
 		return false
 	}
 }
 
+const yesNoStopStr = `(${chalk.green("[y]es")} / ${chalk.yellow("[n]o")} / ${chalk.red("[s]top")})`
+
 const validateConfirmationText = (response: string) => {
-	return ["stop", "y", "n"].includes(response.toLowerCase())
+	return ["stop", "s", "yes", "y", "no", "n"].includes(response.toLowerCase())
 }
 
 export const checkMatch = async ({
@@ -81,7 +84,7 @@ export const checkMatch = async ({
 		{
 			type: "text",
 			name: "confirm",
-			message: "Proceed with match? (y/n/stop)",
+			message: `Proceed with match? ${yesNoStopStr}`,
 			format: formatConfirmationText,
 			validate: validateConfirmationText,
 		},
@@ -189,7 +192,7 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 		{
 			type: "text",
 			name: "confirm",
-			message: "Filter matches on additional players? (y/n/stop)",
+			message: `Filter matches on additional players? ${yesNoStopStr}`,
 			initial: "n",
 			format: formatConfirmationText,
 			validate: validateConfirmationText,
