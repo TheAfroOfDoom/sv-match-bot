@@ -10,10 +10,13 @@ import {
 	aggregateMatchStats,
 	getPlayers,
 	getTeamPlacement,
+	sumHunterKills,
+	sumNonHunterKills,
 	sumTeamKills,
 } from "./stats.ts"
 import {
 	gameNumToRange,
+	hunterIds,
 	insertHyphensIntoUuid,
 	isValidUuid,
 	playerTagToOpggUrl,
@@ -31,13 +34,16 @@ const formatConfirmationText = (response: string) => {
 	}
 }
 
-const yesNoStopStr = `(${chalk.green("[y]es")} / ${chalk.yellow("[n]o")} / ${chalk.red("[s]top")})`
+const yesNoStr = `${chalk.green("[y]es")} / ${chalk.yellow("[n]o")}`
+const yesNoStopStr = `(${yesNoStr} / ${chalk.red("[s]top")})`
 
 const validateConfirmationText = (response: string) => {
 	return ["stop", "s", "yes", "y", "no", "n"].includes(response.toLowerCase())
 }
 
 export const checkMatch = async ({
+	hunterId,
+	isHunterSpecificTourney,
 	match,
 	nextMatchNumber,
 	sheets,
@@ -45,6 +51,8 @@ export const checkMatch = async ({
 	spreadsheetId,
 	teamNames,
 }: {
+	hunterId: string | undefined
+	isHunterSpecificTourney: boolean
 	match: Match
 	nextMatchNumber: number
 	sheets: Sheets
@@ -52,11 +60,14 @@ export const checkMatch = async ({
 	spreadsheetId: string
 	teamNames: string[]
 }): Promise<boolean> => {
-	const matchStats = aggregateMatchStats(match, [
-		sumTeamKills,
-		getTeamPlacement,
-		getPlayers,
-	]) as any[]
+	const aggregators = [getTeamPlacement, getPlayers] as any[]
+	if (isHunterSpecificTourney) {
+		aggregators.push(sumHunterKills(hunterId!), sumNonHunterKills(hunterId!))
+	} else {
+		aggregators.push(sumTeamKills)
+	}
+
+	const matchStats = aggregateMatchStats(match, aggregators)
 	for (const [idx, teamStats] of matchStats.entries()) {
 		teamStats.teamName = teamNames[idx]
 	}
@@ -68,7 +79,13 @@ export const checkMatch = async ({
 	console.log()
 	console.log("Match info:")
 	for (const [teamStatsIdx, teamStats] of matchStatsSorted.entries()) {
-		const { kills, players, placementReadable, teamName } = teamStats
+		const {
+			hunterKills = 0,
+			kills,
+			players,
+			placementReadable,
+			teamName,
+		} = teamStats
 
 		const playersStr = players
 			.map((p, pIdx) => getPlayerColor(teamStatsIdx * players.length + pIdx)(p))
@@ -76,7 +93,9 @@ export const checkMatch = async ({
 		const placementColor = getPlacementColor(teamStatsIdx)
 		const placementStr = placementColor(placementReadable)
 
-		console.log(`${placementStr}: ${teamName} (${playersStr}) (${kills} kills)`)
+		console.log(
+			`${placementStr}: ${teamName} (${playersStr}) (${kills + hunterKills} kills)`
+		)
 	}
 	console.log()
 
@@ -105,6 +124,7 @@ export const checkMatch = async ({
 		{ onCancel: () => process.exit(0) }
 	)
 	await trackMatch({
+		isHunterSpecificTourney,
 		matchStats,
 		matchNumber: matchNumResponse.number,
 		sheets,
@@ -116,20 +136,26 @@ export const checkMatch = async ({
 }
 
 export const trackMatch = async ({
+	isHunterSpecificTourney,
 	matchStats,
 	matchNumber,
 	sheets,
 	sheetName,
 	spreadsheetId,
 }: {
+	isHunterSpecificTourney: boolean
 	matchStats: any
 	matchNumber: number
 	sheets: Sheets
 	sheetName: string
 	spreadsheetId: string
 }) => {
-	const values = matchStats.map((team) => [team.placementReadable, team.kills])
-	const range = `'${sheetName}'!${gameNumToRange(matchNumber)}`
+	const values = matchStats.map((team) =>
+		isHunterSpecificTourney
+			? [team.placementReadable, team.hunterKills ?? 0, team.kills]
+			: [team.placementReadable, team.kills]
+	)
+	const range = `'${sheetName}'!${gameNumToRange(matchNumber, { isHunterSpecificTourney })}`
 	await updateSheetRows({ sheets, spreadsheetId, range, values })
 	console.log(`Successfully updated match ${matchNumber}`)
 }
@@ -250,4 +276,49 @@ export const promptMatchSortOrder = async (): Promise<boolean> => {
 	)
 	await savePromptAnswer(message, sortNewestFirst)
 	return sortNewestFirst.toLowerCase() === "newest"
+}
+
+type HunterSpecificTourneyResult =
+	| { isHunterSpecificTourney: true; hunterId: string }
+	| { isHunterSpecificTourney: false; hunterId: undefined }
+
+export const promptHunterSpecificTourney =
+	async (): Promise<HunterSpecificTourneyResult> => {
+		const message = `Hunter specific tourney? (${yesNoStr})`
+		const initial = await getPromptAnswer(message)
+		const { answer } = await prompts(
+			{
+				type: "text",
+				name: "answer",
+				message,
+				initial: initial ?? "n",
+				validate: (response: string) =>
+					["yes", "y", "no", "n"].includes(response.toLowerCase()),
+			},
+			{ onCancel: () => process.exit(0) }
+		)
+		await savePromptAnswer(message, answer)
+		const isHunterSpecificTourney = ["yes", "y"].includes(answer.toLowerCase())
+
+		let hunterId
+		if (isHunterSpecificTourney) {
+			hunterId = await promptHunterName()
+		}
+
+		return { isHunterSpecificTourney, hunterId }
+	}
+
+const promptHunterName = async (): Promise<string> => {
+	const message = "Hunter name:"
+	const initial = await getPromptAnswer(message)
+	const { name } = await prompts({
+		type: "text",
+		name: "name",
+		message,
+		initial: initial ?? "joule",
+		validate: (response: string) =>
+			Object.keys(hunterIds).includes(response.toLowerCase()),
+	})
+	await savePromptAnswer(message, name.toLowerCase())
+	return hunterIds[name.toLowerCase()]
 }
