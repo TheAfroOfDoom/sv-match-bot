@@ -1,7 +1,7 @@
 import _ from "lodash"
 import prompts from "prompts"
 
-import { getPlayerId } from "./cache.ts"
+import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
 import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
@@ -132,17 +132,20 @@ export const trackMatch = async ({
 }
 
 const promptPlayerTag = async (): Promise<string> => {
-	const playerTagResponse = await prompts(
+	const message = "Enter a player that played in every match"
+	const initial = await getPromptAnswer(message)
+	const { playerTag } = await prompts(
 		{
 			type: "text",
 			name: "playerTag",
-			message: "Enter a player that played in every match",
-			initial: "afro#doom",
+			message,
+			initial: initial ?? "afro#doom",
 			validate: (val: string) => val.length > 0 && val.includes("#"),
 		},
 		{ onCancel: () => process.exit(0) }
 	)
-	return playerTagResponse.playerTag
+	await savePromptAnswer(message, playerTag)
+	return playerTag
 }
 
 const promptPlayerId = async (playerTag: string): Promise<SuperviveUUID> => {
@@ -197,43 +200,51 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 }
 
 export const promptSpreadsheetId = async (): Promise<string> => {
+	const message = "Google Sheets spreadsheet ID:"
+	const initial = await getPromptAnswer(message)
 	const { id } = await prompts(
 		{
 			type: "text",
 			name: "id",
-			message: "Google Sheets spreadsheet ID:",
-			initial: "1vGJwvRqUSZhF2BnJf5Kf1Rcjzcfuwg0zqVEoW32oNCI",
+			message,
+			initial: initial ?? "1vGJwvRqUSZhF2BnJf5Kf1Rcjzcfuwg0zqVEoW32oNCI",
 		},
 		{ onCancel: () => process.exit(0) }
 	)
+	await savePromptAnswer(message, id)
 	return id
 }
 
 export const promptSheetName = async (): Promise<string> => {
+	const message = "Google Sheets sheet name:"
+	const initial = await getPromptAnswer(message)
 	const { name } = await prompts(
 		{
 			type: "text",
 			name: "name",
-			message: "Google Sheets sheet name:",
-			initial: "SheetTest",
+			message,
+			initial: initial ?? "SheetTest",
 		},
 		{ onCancel: () => process.exit(0) }
 	)
+	await savePromptAnswer(message, name)
 	return name
 }
 
 export const promptMatchSortOrder = async (): Promise<boolean> => {
+	const message = "Match display order? (newest/oldest)"
+	const initial = await getPromptAnswer(message)
 	const { sortNewestFirst } = await prompts(
 		{
 			type: "text",
 			name: "sortNewestFirst",
-			message: "Match display order? (newest/oldest)",
-			initial: "newest",
-			format: (response: string) => response.toLowerCase() === "newest",
+			message,
+			initial: initial ?? "newest",
 			validate: (response: string) =>
 				["newest", "oldest"].includes(response.toLowerCase()),
 		},
 		{ onCancel: () => process.exit(0) }
 	)
-	return sortNewestFirst
+	await savePromptAnswer(message, sortNewestFirst)
+	return sortNewestFirst.toLowerCase() === "newest"
 }

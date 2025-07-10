@@ -6,6 +6,7 @@ import { SuperviveUUID } from "./utils.ts"
 
 const cacheDir = "cache"
 const playerIdCachePath = "playerIds.json"
+const promptAnswerCachePath = "promptAnswers.json"
 
 // Create file if doesn't exist
 const ensureExists = async (filePath: string, defaultVal: string) => {
@@ -60,4 +61,21 @@ export const savePlayerId = async (
 	const playerIds = await readPlayerIdCache()
 	playerIds[playerTag] = playerUuid.getFormatted()
 	await writeCache(playerIdCachePath, playerIds)
+}
+
+const readPromptAnswerCache = async (): Promise<{
+	[prompt: string]: string | undefined
+}> => await readCache(promptAnswerCachePath)
+
+export const getPromptAnswer = async (
+	prompt: string
+): Promise<string | undefined> => {
+	const promptAnswers = await readPromptAnswerCache()
+	return promptAnswers[prompt]
+}
+
+export const savePromptAnswer = async (prompt: string, answer: string) => {
+	const promptAnswers = await readPromptAnswerCache()
+	promptAnswers[prompt] = answer
+	await writeCache(promptAnswerCachePath, promptAnswers)
 }
