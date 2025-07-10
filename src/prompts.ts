@@ -1,8 +1,8 @@
-import chalk from "chalk"
 import _ from "lodash"
 import prompts from "prompts"
 
 import { getPlayerId } from "./cache.ts"
+import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
 import {
@@ -58,34 +58,6 @@ export const checkMatch = async ({
 		teamStats.teamName = teamNames[idx]
 	}
 
-	const playerColors = [
-		chalk.hex("#fd5444"),
-		chalk.blueBright,
-		chalk.green,
-		chalk.magenta,
-		chalk.yellow,
-		chalk.cyanBright,
-		chalk.hex("#ffa500"),
-		chalk.hex("#ff85f2"),
-	]
-	const getPlayerColor = (idx: number) =>
-		playerColors[idx % playerColors.length]
-
-	const placementColors = [
-		"#ffd54f",
-		"#ffb74d",
-		"#f48fb1",
-		"#f06292",
-		"#ec407a",
-		"#42a5f5",
-		"#ab47bc",
-		"#7e57c2",
-		"#1e88e5",
-		"#1976d2",
-		"#1565c0",
-		"#0d47a1",
-	]
-
 	const matchStatsSorted = _.cloneDeep(matchStats).sort(
 		(a, b) => a.placement - b.placement
 	)
@@ -98,7 +70,7 @@ export const checkMatch = async ({
 		const playersStr = players
 			.map((p, pIdx) => getPlayerColor(teamStatsIdx * players.length + pIdx)(p))
 			.join(", ")
-		const placementColor = chalk.hex(placementColors[teamStatsIdx])
+		const placementColor = getPlacementColor(teamStatsIdx)
 		const placementStr = placementColor(placementReadable)
 
 		console.log(`${placementStr}: ${teamName} (${playersStr}) (${kills} kills)`)
