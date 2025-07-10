@@ -1,3 +1,4 @@
+import chalk from "chalk"
 import type { sheets_v4 } from "googleapis"
 
 export type Sheets = sheets_v4.Sheets
@@ -5,12 +6,31 @@ export type Sheets = sheets_v4.Sheets
 async function getSheetRows(
 	sheets: Sheets,
 	spreadsheetId: string,
-	range: string
+	range: string,
+	sheetName: string
 ) {
-	const res = await sheets.spreadsheets.values.get({
-		spreadsheetId,
-		range,
-	})
+	let res
+	try {
+		res = await sheets.spreadsheets.values.get({
+			spreadsheetId,
+			range,
+		})
+	} catch (error) {
+		if (error.message === "Requested entity was not found.") {
+			const msg = `${chalk.red("Failed to access Google Sheets spreadsheet with ID: ")}${chalk.yellow(spreadsheetId)}`
+			console.error(msg)
+			process.exit(1)
+		} else if (error.message.includes("Unable to parse range")) {
+			const msg =
+				chalk.red("Failed to access Google Sheets sheet name/range: ") +
+				chalk.yellow(sheetName) +
+				chalk.red(" / ") +
+				chalk.cyan(range)
+			console.error(msg)
+			process.exit(1)
+		}
+		throw error
+	}
 	const vals = res.data.values
 	if (vals === null || vals === undefined) {
 		throw new Error("Received undefined sheet-row data")
@@ -24,7 +44,7 @@ export async function getTeamNames(
 	spreadsheetId: string
 ): Promise<string[]> {
 	const range = `'${sheetName}'!B3:B14`
-	const rows = await getSheetRows(sheets, spreadsheetId, range)
+	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
 	return rows.map((row) => row[0])
 }
 
