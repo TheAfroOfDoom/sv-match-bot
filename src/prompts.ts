@@ -59,7 +59,7 @@ export const checkMatch = async ({
 	sheetName: string
 	spreadsheetId: string
 	teamNames: string[]
-}): Promise<boolean> => {
+}): Promise<{ didTrackMatch: boolean; matchNumber: number }> => {
 	const aggregators = [getTeamPlacement, getPlayers] as any[]
 	if (isHunterSpecificTourney) {
 		aggregators.push(sumHunterKills(hunterId!), sumNonHunterKills(hunterId!))
@@ -111,7 +111,7 @@ export const checkMatch = async ({
 	)
 
 	if (!matchResponse.confirm) {
-		return false
+		return { didTrackMatch: false, matchNumber: nextMatchNumber }
 	}
 
 	const matchNumResponse = await prompts(
@@ -132,7 +132,7 @@ export const checkMatch = async ({
 		spreadsheetId,
 	})
 
-	return true
+	return { didTrackMatch: true, matchNumber: matchNumResponse.number }
 }
 
 export const trackMatch = async ({

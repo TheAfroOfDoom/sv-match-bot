@@ -55,7 +55,7 @@ const main = async () => {
 	console.log(`Iterating through latest matches with inputted players`)
 	let nextMatchNumber = sortNewestFirst ? 6 : 1
 	for (const match of customMatchesWithAllPlayers) {
-		const didTrackMatch = await checkMatch({
+		const { didTrackMatch, matchNumber } = await checkMatch({
 			hunterId,
 			isHunterSpecificTourney,
 			match,
@@ -66,7 +66,7 @@ const main = async () => {
 			teamNames,
 		})
 		if (didTrackMatch) {
-			nextMatchNumber += sortNewestFirst ? -1 : 1
+			nextMatchNumber = matchNumber + (sortNewestFirst ? -1 : 1)
 		}
 	}
 }
