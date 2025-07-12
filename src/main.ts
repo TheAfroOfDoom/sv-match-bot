@@ -15,6 +15,7 @@ import {
 	promptPlayer,
 	promptSheetName,
 	promptSpreadsheetId,
+	remindRefreshPlayerPage,
 } from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { getTeamNames } from "./sheets.ts"
@@ -34,6 +35,10 @@ const main = async () => {
 	const players: TPlayer[] = []
 	while (true) {
 		const { playerTag, playerUuid } = await promptPlayer()
+		if (players.length === 0) {
+			await remindRefreshPlayerPage(playerTag)
+		}
+
 		const player = await getPlayer(playerUuid, playerTag)
 		await savePlayerId(playerTag, playerUuid)
 

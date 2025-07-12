@@ -322,3 +322,16 @@ const promptHunterName = async (): Promise<string> => {
 	await savePromptAnswer(message, name.toLowerCase())
 	return hunterIds[name.toLowerCase()]
 }
+
+export const remindRefreshPlayerPage = async (playerTag: string) => {
+	const url = playerTagToOpggUrl(playerTag)
+	await prompts(
+		{
+			type: "invisible",
+			name: "any",
+			message: `Click ${chalk.yellow('"Fetch New Matches"')} on ${chalk.cyanBright(playerTag)}'s op.gg page (press <Enter> when done>)\n  ${chalk.cyan(url)}`,
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	return
+}
