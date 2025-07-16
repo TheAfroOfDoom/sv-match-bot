@@ -27,10 +27,10 @@ const main = async () => {
 	const spreadsheetId = await promptSpreadsheetId()
 	const sheetName = await promptSheetName()
 
+	const teamNames = await getTeamNames(sheets, sheetName, spreadsheetId)
+
 	const { isHunterSpecificTourney, hunterId } =
 		await promptHunterSpecificTourney()
-
-	const teamNames = await getTeamNames(sheets, sheetName, spreadsheetId)
 
 	const players: TPlayer[] = []
 	while (true) {
