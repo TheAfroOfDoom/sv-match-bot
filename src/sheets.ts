@@ -1,6 +1,8 @@
 import chalk from "chalk"
 import type { sheets_v4 } from "googleapis"
 
+import { deleteToken } from "./googleAuth.ts"
+
 export type Sheets = sheets_v4.Sheets
 
 async function getSheetRows(
@@ -46,8 +48,30 @@ export async function getTeamNames(
 	spreadsheetId: string
 ): Promise<string[]> {
 	const range = `'${sheetName}'!B3:B14`
-	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
-	return rows.map((row) => row[0])
+	try {
+		const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
+		return rows.map((row) => row[0])
+	} catch (error) {
+		if (
+			error.message === "invalid_grant" ||
+			error.message === "invalid_client"
+		) {
+			await deleteToken()
+
+			const reason =
+				error.message === "invalid_grant"
+					? `has ${chalk.yellow("expired")}`
+					: `is ${chalk.yellow("invalid")}`
+
+			const msg = chalk.red(
+				`Your Google OAuth token ${reason}. ` +
+					`Please ${chalk.yellow("re-authenticate")} (re-run the script)`
+			)
+			console.error(msg)
+			process.exit(1)
+		}
+		throw error
+	}
 }
 
 export async function updateSheetRows({

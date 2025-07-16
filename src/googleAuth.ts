@@ -55,3 +55,7 @@ export async function authorize() {
 	}
 	throw new Error("Failed to authenticate with Google OAuth2")
 }
+
+export async function deleteToken() {
+	await fs.unlink(TOKEN_PATH)
+}
