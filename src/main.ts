@@ -36,12 +36,13 @@ const main = async () => {
 	const players: TPlayer[] = []
 	while (true) {
 		const { playerTag, playerUuid } = await promptPlayer()
+		await savePlayerId(playerTag, playerUuid)
+
 		if (players.length === 0) {
 			await remindRefreshPlayerPage(playerTag)
 		}
 
 		const player = await getPlayer(playerUuid, playerTag)
-		await savePlayerId(playerTag, playerUuid)
 
 		players.push(player)
 
