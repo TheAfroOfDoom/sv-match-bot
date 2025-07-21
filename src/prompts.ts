@@ -3,7 +3,7 @@ import _ from "lodash"
 import prompts from "prompts"
 
 import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
-import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
+import { customColors, getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
 import {
@@ -329,7 +329,7 @@ export const remindRefreshPlayerPage = async (playerTag: string) => {
 		{
 			type: "invisible",
 			name: "any",
-			message: `Click ${chalk.yellow('"Fetch New Matches"')} on ${chalk.cyanBright(playerTag)}'s op.gg page (press <Enter> when done>)\n  ${chalk.cyan(url)}`,
+			message: `Click ${chalk.yellow('"Fetch New Matches"')} on ${customColors.cyanVeryBright(playerTag)}'s op.gg page ${chalk.yellow("(press <Enter> when done>)")}\n  ${chalk.cyan(url)}`,
 		},
 		{ onCancel: () => process.exit(0) }
 	)

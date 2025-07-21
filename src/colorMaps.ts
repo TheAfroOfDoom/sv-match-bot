@@ -30,3 +30,7 @@ const placementColors = [
 ].map((hexCode) => chalk.hex(hexCode))
 
 export const getPlacementColor = (idx: number) => placementColors[idx]
+
+export const customColors = {
+	cyanVeryBright: chalk.hex("#92ebf4"),
+}
