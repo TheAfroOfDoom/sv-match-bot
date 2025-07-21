@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { SuperviveUUID } from "./utils.ts"
+import { playerTagToOpggUrl, SuperviveUUID } from "./utils.ts"
 
 describe("SuperviveUUID", () => {
 	it("should not error when given an input with dashes", () => {
@@ -27,5 +27,13 @@ describe("SuperviveUUID", () => {
 			const uuid = new SuperviveUUID(input)
 			expect(uuid.getFormatted()).to.equal(input)
 		})
+	})
+})
+
+describe("playerTagToOpggUrl", () => {
+	it("should replace the `#` in a player tag with `%23`", () => {
+		const input = "player#tag"
+		const expected = "https://supervive.op.gg/players/steam-player%23tag"
+		expect(playerTagToOpggUrl(input)).to.equal(expected)
 	})
 })
