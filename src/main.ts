@@ -18,6 +18,7 @@ import {
 	remindRefreshPlayerPage,
 } from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
+import { closeBrowser } from "./scrape.ts"
 import { getTeamNames } from "./sheets.ts"
 
 const main = async () => {
@@ -49,6 +50,7 @@ const main = async () => {
 			break
 		}
 	}
+	await closeBrowser()
 
 	const sortNewestFirst = await promptMatchSortOrder()
 	const customMatches = await getMatchesFromPlayer(players[0], sortNewestFirst)

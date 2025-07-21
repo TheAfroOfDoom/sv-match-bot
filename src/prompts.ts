@@ -5,6 +5,7 @@ import prompts from "prompts"
 import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
 import { customColors, getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
+import { scrapePlayerId } from "./scrape.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
 import {
 	aggregateMatchStats,
@@ -14,14 +15,7 @@ import {
 	sumNonHunterKills,
 	sumTeamKills,
 } from "./stats.ts"
-import {
-	gameNumToRange,
-	hunterIds,
-	insertHyphensIntoUuid,
-	isValidUuid,
-	playerTagToOpggUrl,
-	SuperviveUUID,
-} from "./utils.ts"
+import { gameNumToRange, hunterIds, playerTagToOpggUrl } from "./utils.ts"
 
 const formatConfirmationText = (response: string) => {
 	const responseLower = response.toLowerCase()
@@ -177,36 +171,10 @@ const promptPlayerTag = async (): Promise<string> => {
 	return playerTag
 }
 
-const promptPlayerId = async (playerTag: string): Promise<SuperviveUUID> => {
-	console.log(
-		"Retrieve the player's UUID from the following URL (see README for details)"
-	)
-	console.log(playerTagToOpggUrl(playerTag))
-
-	const playerIdResponse = await prompts(
-		{
-			type: "text",
-			name: "uuid",
-			message: `${playerTag}'s UUID`,
-			validate: (val: string) =>
-				isValidUuid(val, { hyphens: true }) ||
-				isValidUuid(val, { hyphens: false }),
-			format: (val: string) => {
-				if (isValidUuid(val, { hyphens: false })) {
-					return insertHyphensIntoUuid(val)
-				}
-				return val
-			},
-		},
-		{ onCancel: () => process.exit(0) }
-	)
-	return new SuperviveUUID(playerIdResponse.uuid)
-}
-
 export const promptPlayer = async () => {
 	const playerTag = await promptPlayerTag()
 	const playerUuid =
-		(await getPlayerId(playerTag)) ?? (await promptPlayerId(playerTag))
+		(await getPlayerId(playerTag)) ?? (await scrapePlayerId(playerTag))
 	return {
 		playerTag,
 		playerUuid,
