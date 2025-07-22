@@ -15,10 +15,9 @@ import {
 	promptPlayer,
 	promptSheetName,
 	promptSpreadsheetId,
-	remindRefreshPlayerPage,
 } from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
-import { closeBrowser } from "./scrape.ts"
+import { closeBrowser, fetchNewMatchesForPlayer } from "./scrape.ts"
 import { getTeamNames } from "./sheets.ts"
 
 const main = async () => {
@@ -39,7 +38,7 @@ const main = async () => {
 		await savePlayerId(playerTag, playerUuid)
 
 		if (players.length === 0) {
-			await remindRefreshPlayerPage(playerTag)
+			await fetchNewMatchesForPlayer(playerTag)
 		}
 
 		const player = await getPlayer(playerUuid, playerTag)

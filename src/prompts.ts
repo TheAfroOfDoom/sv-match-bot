@@ -3,7 +3,7 @@ import _ from "lodash"
 import prompts from "prompts"
 
 import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
-import { customColors, getPlacementColor, getPlayerColor } from "./colorMaps.ts"
+import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { scrapePlayerId } from "./scrape.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
@@ -15,7 +15,7 @@ import {
 	sumNonHunterKills,
 	sumTeamKills,
 } from "./stats.ts"
-import { gameNumToRange, hunterIds, playerTagToOpggUrl } from "./utils.ts"
+import { gameNumToRange, hunterIds } from "./utils.ts"
 
 const formatConfirmationText = (response: string) => {
 	const responseLower = response.toLowerCase()
@@ -289,17 +289,4 @@ const promptHunterName = async (): Promise<string> => {
 	})
 	await savePromptAnswer(message, name.toLowerCase())
 	return hunterIds[name.toLowerCase()]
-}
-
-export const remindRefreshPlayerPage = async (playerTag: string) => {
-	const url = playerTagToOpggUrl(playerTag)
-	await prompts(
-		{
-			type: "invisible",
-			name: "any",
-			message: `Click ${chalk.yellow('"Fetch New Matches"')} on ${customColors.cyanVeryBright(playerTag)}'s op.gg page ${chalk.yellow("(press <Enter> when done>)")}\n  ${chalk.cyan(url)}`,
-		},
-		{ onCancel: () => process.exit(0) }
-	)
-	return
 }

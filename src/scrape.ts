@@ -73,6 +73,52 @@ const getPlayerDataRequestUrl = async (
 	return promise
 }
 
+export const fetchNewMatchesForPlayer = async (
+	playerTag: string
+): Promise<void> => {
+	process.stdout.write(
+		chalk.gray(
+			`${chalk.yellow("…")} Fetching new matches for ${customColors.cyanVeryBright(playerTag)} ... `
+		)
+	)
+
+	const browser = await getBrowser()
+	const url = playerTagToOpggUrl(playerTag)
+	const page = await browser.newPage()
+
+	const { promise, resolve } = makeDeferredPromise<void>()
+	page.on("response", async (response) => {
+		const method = response.request().method()
+		if (method !== "POST") {
+			return
+		}
+		if (!response.request().url().endsWith("/matches/fetch")) {
+			return
+		}
+
+		await response.finished()
+		if (response.status() !== 200) {
+			console.log(`\r${chalk.red("×")}`)
+			console.error(
+				chalk.yellow(
+					"Failed to fetch new player matches -- match list may be outdated"
+				)
+			)
+		} else {
+			console.log(`\r${chalk.green("√")}`)
+		}
+
+		await page.close()
+		resolve()
+	})
+
+	await page.goto(url)
+	const button = page.getByRole("button", { name: "Fetch New Matches" })
+	await button.click()
+
+	return promise
+}
+
 const makeDeferredPromise = <T>() => {
 	let deferredResolve: (value: T) => void
 	let deferredReject: (reason?: any) => void
