@@ -9,6 +9,9 @@ import {
 	SuperviveUUID,
 } from "./utils.ts"
 
+const userAgent =
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+
 let activeBrowser: Browser | undefined
 /** Returns the active browser if it has already been launched */
 export const getBrowser = async () => {
@@ -57,7 +60,7 @@ const getPlayerDataRequestUrl = async (
 	browser: Browser,
 	url: string
 ): Promise<string> => {
-	const page = await browser.newPage()
+	const page = await browser.newPage({ userAgent })
 
 	const requestPromise = page.waitForRequest((request) =>
 		request.url().endsWith("/matches?page=1")
@@ -79,7 +82,7 @@ export const fetchNewMatchesForPlayer = async (
 
 	const browser = await getBrowser()
 	const url = playerTagToOpggUrl(playerTag)
-	const page = await browser.newPage()
+	const page = await browser.newPage({ userAgent })
 
 	const { promise, resolve } = makeDeferredPromise<void>()
 	page.on("response", async (response) => {
