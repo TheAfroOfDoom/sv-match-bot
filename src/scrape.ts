@@ -59,18 +59,13 @@ const getPlayerDataRequestUrl = async (
 ): Promise<string> => {
 	const page = await browser.newPage()
 
-	const { promise, resolve } = makeDeferredPromise<string>()
-	page.on("request", async (request) => {
-		const requestUrl = request.url()
-		if (!requestUrl.endsWith("/matches?page=1")) {
-			return
-		}
-		await page.close()
-		resolve(requestUrl)
-	})
-
+	const requestPromise = page.waitForRequest((request) =>
+		request.url().endsWith("/matches?page=1")
+	)
 	await page.goto(url)
-	return promise
+	const playerDataRequest = await requestPromise
+	await page.close()
+	return playerDataRequest.url()
 }
 
 export const fetchNewMatchesForPlayer = async (
