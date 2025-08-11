@@ -85,7 +85,7 @@ export const gameNumToRange = (
 }
 
 export const playerTagToOpggUrl = (playerTag: string) =>
-	`https://supervive.op.gg/players/steam-${playerTag.replace("#", "%23")}`
+	`https://op.gg/supervive/players/steam-${playerTag.replace("#", "%23")}`
 
 export const isValidUuid = (
 	val: string,

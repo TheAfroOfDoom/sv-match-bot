@@ -1,4 +1,4 @@
-// https://supervive.op.gg/api/matches/steam-4d7f5d72-c78b-459f-b550-f0604137dfec
+// https://op.gg/supervive/api/matches/steam-4d7f5d72-c78b-459f-b550-f0604137dfec
 
 import * as z from "zod/v4"
 

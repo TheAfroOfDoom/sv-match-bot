@@ -10,7 +10,7 @@ export type Match = {
 
 export const getMatch = async (svUuid: SuperviveUUID): Promise<Match> => {
 	const param = svUuid.getFormatted()
-	const matchUrl = `https://supervive.op.gg/api/matches/steam-${param}`
+	const matchUrl = `https://op.gg/supervive/api/matches/steam-${param}`
 	const response = await fetch(matchUrl)
 	const matchPlayers = MatchPlayers.parse(await response.json())
 	return {
@@ -24,7 +24,7 @@ export const getPlayer = async (
 	playerTag: string
 ): Promise<TPlayer> => {
 	const param = svUuid.getRaw()
-	const playerUrl = `https://supervive.op.gg/api/players/steam-${param}/matches`
+	const playerUrl = `https://op.gg/supervive/api/players/steam-${param}/matches`
 	const response = await fetch(playerUrl)
 	const result = Player.safeParse(await response.json())
 	if (!result.success) {

@@ -40,7 +40,7 @@ export const scrapePlayerId = async (
 
 	const playerDataUrl = await getPlayerDataRequestUrl(browser, url)
 	const rawUuidRegexMatch = playerDataUrl.match(
-		/^https:\/\/supervive.op.gg\/api\/players\/steam-([0-9a-f]{32})\/matches\?page=1$/
+		/^https:\/\/op\.gg\/supervive\/api\/players\/steam-([0-9a-f]{32})\/matches\?page=1$/
 	)
 	if (rawUuidRegexMatch === null) {
 		console.log(`\r${chalk.red("×")}`)

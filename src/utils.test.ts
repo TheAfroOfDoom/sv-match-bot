@@ -33,7 +33,7 @@ describe("SuperviveUUID", () => {
 describe("playerTagToOpggUrl", () => {
 	it("should replace the `#` in a player tag with `%23`", () => {
 		const input = "player#tag"
-		const expected = "https://supervive.op.gg/players/steam-player%23tag"
+		const expected = "https://op.gg/supervive/players/steam-player%23tag"
 		expect(playerTagToOpggUrl(input)).to.equal(expected)
 	})
 })
