@@ -11,9 +11,13 @@ const PlayerStats = z.object({
 	Knocks: zero,
 	Assists: zero,
 	Knocked: zero,
+	Revives: zero,
 	CreepKills: zero,
 	DamageDone: zero,
 	Resurrects: zero,
+	DamageTaken: zero,
+	Resurrected: zero,
+	HealingGiven: zero,
 	MaxKillStreak: zero,
 	HeroDamageDone: zero,
 	MaxKnockStreak: zero,
@@ -25,11 +29,13 @@ const PlayerStats = z.object({
 	HealingGivenSelf: zero,
 	EffectiveDamageDone: zero,
 	EffectiveDamageTaken: zero,
+	ShieldMitigatedDamage: zero,
 	HeroEffectiveDamageDone: zero,
 	HeroEffectiveDamageTaken: zero,
 })
 
 const PlayerData = z.object({
+	is_virtual: z.optional(z.boolean()),
 	id: z.number(),
 	stats: PlayerStats,
 	platform_id: z.number(),
@@ -55,8 +61,18 @@ const PlayerData = z.object({
 	}),
 	hero: z.object({
 		asset_id: z.string(),
+		name: z.string(),
 		head_image_url: z.string(),
+		abilities: z.array(
+			z.object({
+				id: z.string(),
+				hotkey: z.string(),
+				image_url: z.url(),
+			})
+		),
 	}),
+	ability_build: z.string(),
+	ability_count: z.number().nonnegative(),
 })
 
 export const Player = z.object({
