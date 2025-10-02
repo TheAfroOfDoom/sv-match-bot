@@ -41,7 +41,7 @@ const main = async () => {
 			await fetchNewMatchesForPlayer(playerTag)
 		}
 
-		const player = await getPlayer(playerUuid, playerTag)
+		const player = await getPlayer(playerUuid)
 
 		players.push(player)
 

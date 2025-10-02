@@ -1,3 +1,5 @@
+import chalk from "chalk"
+
 import { MatchPlayers, type TMatchPlayers } from "./schema/MatchPlayers.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { Player } from "./schema/Player.ts"
@@ -19,24 +21,22 @@ export const getMatch = async (svUuid: SuperviveUUID): Promise<Match> => {
 	}
 }
 
-export const getPlayer = async (
-	svUuid: SuperviveUUID,
-	playerTag: string
-): Promise<TPlayer> => {
+export const getPlayer = async (svUuid: SuperviveUUID): Promise<TPlayer> => {
 	const param = svUuid.getRaw()
 	const playerUrl = `https://op.gg/supervive/api/players/steam-${param}/matches`
 	const response = await fetch(playerUrl)
 	const result = Player.safeParse(await response.json())
 	if (!result.success) {
-		throw new Error(
-			`Player ${playerTag} has incomplete data (they're out, but the game might still be going?)`
-		)
+		console.error(chalk.red("Failed to parse player data"))
+		throw new Error(result.error.message)
 	}
 	return result.data
 }
 
 const getMatchIdsFromPlayer = (player: TPlayer): SuperviveUUID[] => {
-	const customs = player.data.filter((match) => match.queue_id === "customgame")
+	const customs = player.data.filter(
+		(match) => "id" in match && match.queue_id === "customgame"
+	)
 	return customs.map((custom) => new SuperviveUUID(custom.match_id))
 }
 

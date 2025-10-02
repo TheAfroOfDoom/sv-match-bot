@@ -75,8 +75,21 @@ const PlayerData = z.object({
 	ability_count: z.number().nonnegative(),
 })
 
+const IncompletePlayerData = PlayerData.omit({
+	id: true,
+	team_id: true,
+	party_id: true,
+	survival_duration: true,
+	referral_code: true,
+	created_at: true,
+	updated_at: true,
+	platform: true,
+	ability_build: true,
+	ability_count: true,
+})
+
 export const Player = z.object({
-	data: z.array(PlayerData),
+	data: z.array(z.union([PlayerData, IncompletePlayerData])),
 	meta: z.object({
 		current_page: z.number(),
 		per_page: z.number(),
