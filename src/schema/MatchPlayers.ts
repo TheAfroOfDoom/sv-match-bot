@@ -2,6 +2,8 @@
 
 import * as z from "zod/v4"
 
+import { PlayerAbilities } from "./Player.ts"
+
 const MatchStats = z.object({
 	Kills: z.number(),
 	Deaths: z.number(),
@@ -10,6 +12,13 @@ const MatchStats = z.object({
 	HeroEffectiveDamageTaken: z.number(),
 	HealingGiven: z.number(),
 	HealingGivenSelf: z.number(),
+})
+
+const InventoryItem = z.object({
+	identifier: z.string(),
+	index: z.number(),
+	slot: z.string(),
+	star_level: z.number(),
 })
 
 const MatchPlayer = z.object({
@@ -29,6 +38,21 @@ const MatchPlayer = z.object({
 	hero: z.object({
 		head_image_url: z.string(),
 		name: z.string(),
+		abilities: PlayerAbilities,
+	}),
+	ability_events: z.array(
+		z.object({
+			hotkey: z.string(),
+			id: z.string(),
+			level: z.number(),
+		})
+	),
+	inventory: z.object({
+		Boots: z.array(InventoryItem),
+		Inventory: z.array(InventoryItem),
+		MinorUtility: z.array(InventoryItem),
+		Shield: z.array(InventoryItem),
+		Utility: z.array(InventoryItem),
 	}),
 })
 

@@ -34,6 +34,14 @@ const PlayerStats = z.object({
 	HeroEffectiveDamageTaken: zero,
 })
 
+export const PlayerAbilities = z.array(
+	z.object({
+		id: z.string(),
+		hotkey: z.string(),
+		image_url: z.url(),
+	})
+)
+
 const PlayerData = z.object({
 	is_virtual: z.optional(z.boolean()),
 	id: z.number(),
@@ -63,13 +71,7 @@ const PlayerData = z.object({
 		asset_id: z.string(),
 		name: z.string(),
 		head_image_url: z.string(),
-		abilities: z.array(
-			z.object({
-				id: z.string(),
-				hotkey: z.string(),
-				image_url: z.url(),
-			})
-		),
+		abilities: PlayerAbilities,
 	}),
 	ability_build: z.string(),
 	ability_count: z.number().nonnegative(),
