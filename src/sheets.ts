@@ -33,12 +33,7 @@ async function getSheetRows(
 		}
 		throw error
 	}
-	const vals = res.data.values
-	if (vals === null || vals === undefined) {
-		throw new Error(
-			"Received undefined sheet-row data (did you remember to input team names?)"
-		)
-	}
+	const vals = res.data.values ?? []
 	return vals as string[][]
 }
 
@@ -50,6 +45,11 @@ export async function getTeamNames(
 	const range = `'${sheetName}'!B3:B14`
 	try {
 		const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
+		if (rows.length === 0) {
+			throw new Error(
+				"Received undefined sheet-row data (did you remember to input team names?)"
+			)
+		}
 		return rows.map((row) => row[0])
 	} catch (error) {
 		if (
