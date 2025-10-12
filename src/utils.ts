@@ -17,34 +17,10 @@ export class SuperviveUUID {
 	}
 }
 
-export const hunterIds = {
-	ghost: "hero:assault",
-	zeph: "hero:backlinehealer",
-	carbine: "hero:bountyhunter",
-	crysta: "hero:burstcaster",
-	saros: "hero:farshot",
-	felix: "hero:firefox",
-	shiv: "hero:flex",
-	celeste: "hero:freeze",
-	hudson: "hero:gunner",
-	kingpin: "hero:hookguy",
-	myth: "hero:huntress",
-	elluna: "hero:reshealer",
-	bishop: "hero:rocketjumper",
-	brall: "hero:ronin",
-	oath: "hero:shieldbot",
-	shrike: "hero:sniper",
-	jin: "hero:stalker",
-	joule: "hero:storm",
-	eva: "hero:succubus",
-	beebo: "hero:beebo",
-	void: "hero:void",
-}
-
 // HARDCODED
 // these could be converted to be dynamic with some parameters, e.g.
 // rangeLength: number
-const normalColMap = {
+const colMap = {
 	1: ["C", "D"],
 	2: ["E", "F"],
 	3: ["G", "H"],
@@ -55,28 +31,13 @@ const normalColMap = {
 	8: ["Q", "R"],
 }
 
-const hunterSpecificColMap = {
-	1: ["C", "E"],
-	2: ["F", "H"],
-	3: ["I", "K"],
-	4: ["L", "N"],
-	5: ["O", "Q"],
-	6: ["R", "T"],
-	7: ["U", "W"],
-	8: ["X", "Z"],
-}
-
-export const gameNumToRange = (
-	gameNum: number,
-	{ isHunterSpecificTourney }: { isHunterSpecificTourney: boolean }
-) => {
+export const gameNumToRange = (gameNum: number) => {
 	// HARDCODED
 	// Sheet supports games 1-8
 	if (gameNum < 1 || gameNum > 8) {
 		throw new Error(`Invalid gameNum: ${gameNum}`)
 	}
 
-	const colMap = isHunterSpecificTourney ? hunterSpecificColMap : normalColMap
 	const colRange = colMap[gameNum]
 
 	// HARDCODED
