@@ -10,28 +10,6 @@ export const sumTeamKills = <T extends { kills?: number }>(
 	teamStats.kills = kills
 }
 
-export const sumHunterKills =
-	(hunterIdFilter: string) =>
-	(teamStats: { hunterKills?: number }, matchPlayer: TMatchPlayer) => {
-		const { hero_asset_id, stats } = matchPlayer
-		if (hero_asset_id === hunterIdFilter) {
-			let hunterKills = teamStats.hunterKills ?? 0
-			hunterKills += stats.Kills
-			teamStats.hunterKills = hunterKills
-		}
-	}
-
-export const sumNonHunterKills =
-	(hunterIdFilter: string) =>
-	(teamStats: { kills?: number }, matchPlayer: TMatchPlayer) => {
-		const { hero_asset_id, stats } = matchPlayer
-		if (hero_asset_id !== hunterIdFilter) {
-			let kills = teamStats.kills ?? 0
-			kills += stats.Kills
-			teamStats.kills = kills
-		}
-	}
-
 export const getTeamPlacement = <
 	T extends { placement?: number; placementReadable?: string },
 >(

@@ -10,7 +10,6 @@ import { authorize } from "./googleAuth.ts"
 import {
 	checkMatch,
 	promptAddPlayer,
-	promptHunterSpecificTourney,
 	promptMatchSortOrder,
 	promptPlayer,
 	promptSheetName,
@@ -28,9 +27,6 @@ const main = async () => {
 	const sheetName = await promptSheetName()
 
 	const teamNames = await getTeamNames(sheets, sheetName, spreadsheetId)
-
-	const { isHunterSpecificTourney, hunterId } =
-		await promptHunterSpecificTourney()
 
 	const players: TPlayer[] = []
 	while (true) {
@@ -63,8 +59,6 @@ const main = async () => {
 	let nextMatchNumber = sortNewestFirst ? 6 : 1
 	for (const match of customMatchesWithAllPlayers) {
 		const { didTrackMatch, matchNumber } = await checkMatch({
-			hunterId,
-			isHunterSpecificTourney,
 			match,
 			nextMatchNumber,
 			sheets,
