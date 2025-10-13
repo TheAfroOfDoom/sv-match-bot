@@ -31,29 +31,7 @@ async function getSheetRows(
 				chalk.cyan(range)
 			console.error(msg)
 			process.exit(1)
-		}
-		throw error
-	}
-	const vals = res.data.values ?? []
-	return vals as string[][]
-}
-
-export async function getTeamNames(
-	sheets: Sheets,
-	sheetName: string,
-	spreadsheetId: string
-): Promise<string[]> {
-	const range = `'${sheetName}'!B3:B14`
-	try {
-		const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
-		if (rows.length === 0) {
-			throw new Error(
-				"Received undefined sheet-row data (did you remember to input team names?)"
-			)
-		}
-		return rows.map((row) => row[0])
-	} catch (error) {
-		if (
+		} else if (
 			error.message === "invalid_grant" ||
 			error.message === "invalid_client"
 		) {
@@ -73,6 +51,23 @@ export async function getTeamNames(
 		}
 		throw error
 	}
+	const vals = res.data.values ?? []
+	return vals as string[][]
+}
+
+export async function getTeamNames(
+	sheets: Sheets,
+	sheetName: string,
+	spreadsheetId: string
+): Promise<string[]> {
+	const range = `'${sheetName}'!B3:B14`
+	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
+	if (rows.length === 0) {
+		throw new Error(
+			"Received undefined sheet-row data (did you remember to input team names?)"
+		)
+	}
+	return rows.map((row) => row[0])
 }
 
 export async function updateSheetRows({
