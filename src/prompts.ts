@@ -6,8 +6,11 @@ import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
 import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { scrapePlayerId } from "./scrape.ts"
-import { type Sheets, updateSheetRows } from "./sheets.ts"
-import { placementToReadable } from "./stats.ts"
+import {
+	placementToReadable,
+	sheetsHeader,
+	sheetsHeaderStats,
+} from "./stats.ts"
 
 export class Stop extends Error {}
 
@@ -32,16 +35,12 @@ const validateConfirmationText = (response: string) => {
 export const checkMatch = async ({
 	match,
 	nextMatchNumber,
-	rawDataSheetName,
-	sheets,
-	spreadsheetId,
+	playerStatsData,
 	teamNames,
 }: {
 	match: Match
+	playerStatsData: (number | string)[][]
 	nextMatchNumber: number
-	rawDataSheetName: string
-	sheets: Sheets
-	spreadsheetId: string
 	teamNames: string[]
 }): Promise<{ didTrackMatch: boolean; matchNumber: number }> => {
 	const matchStatsPerTeam: {
@@ -143,10 +142,8 @@ export const checkMatch = async ({
 	)
 	await trackMatch({
 		matchNumber: matchNumResponse.number,
-		rawDataSheetName,
-		sheets,
+		playerStatsData,
 		statsPerPlayer,
-		spreadsheetId,
 	})
 
 	return { didTrackMatch: true, matchNumber: matchNumResponse.number }
@@ -154,14 +151,11 @@ export const checkMatch = async ({
 
 export const trackMatch = async ({
 	matchNumber,
-	rawDataSheetName,
-	sheets,
+	playerStatsData,
 	statsPerPlayer,
-	spreadsheetId,
 }: {
 	matchNumber: number
-	rawDataSheetName: string
-	sheets: Sheets
+	playerStatsData: (number | string)[][]
 	statsPerPlayer: Array<{
 		player: string
 		teamId: string
@@ -176,26 +170,11 @@ export const trackMatch = async ({
 		HealingGiven: number
 		HealingGivenSelf: number
 	}>
-	spreadsheetId: string
 }) => {
-	const headerStats = [
-		"Kills",
-		"Deaths",
-		"Assists",
-		"HeroEffectiveDamageDone",
-		"HeroEffectiveDamageTaken",
-		"HealingGiven",
-		"HealingGivenSelf",
-	] as const
-	const header = [
-		"matchNum",
-		"teamNum",
-		"teamName",
-		"player",
-		"placement",
-		"hero",
-	].concat(headerStats)
-	const rawDataValues: (number | string)[][] = []
+	if (playerStatsData.length === 0) {
+		playerStatsData.push(sheetsHeader.slice())
+	}
+
 	for (const playerStats of statsPerPlayer) {
 		const playerStatsFlat = [
 			matchNumber,
@@ -205,22 +184,11 @@ export const trackMatch = async ({
 			playerStats.placement,
 			playerStats.hero,
 		]
-		for (const tag of headerStats) {
+		for (const tag of sheetsHeaderStats) {
 			playerStatsFlat.push(playerStats[tag])
 		}
-		rawDataValues.push(playerStatsFlat)
+		playerStatsData.push(playerStatsFlat)
 	}
-	const colStart = "A"
-	const colEnd = String.fromCharCode(colStart.charCodeAt(0) + header.length)
-	await updateSheetRows({
-		append: true,
-		sheets,
-		spreadsheetId,
-		range: `${rawDataSheetName}!${colStart}:${colEnd}`,
-		values: [header, ...rawDataValues],
-	})
-
-	console.log(`Successfully updated match ${matchNumber}`)
 }
 
 const promptPlayerTag = async (): Promise<string> => {

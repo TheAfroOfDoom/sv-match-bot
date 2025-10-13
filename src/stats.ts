@@ -17,3 +17,22 @@ export const placementToReadable = (placement: number) => {
 	const idx = Number(placement) - 1
 	return map[idx]
 }
+
+export const sheetsHeaderStats = [
+	"Kills",
+	"Deaths",
+	"Assists",
+	"HeroEffectiveDamageDone",
+	"HeroEffectiveDamageTaken",
+	"HealingGiven",
+	"HealingGivenSelf",
+] as const
+
+export const sheetsHeader = [
+	"matchNum",
+	"teamNum",
+	"teamName",
+	"player",
+	"placement",
+	"hero",
+].concat(sheetsHeaderStats)

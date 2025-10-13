@@ -19,7 +19,7 @@ import {
 } from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { closeBrowser, fetchNewMatchesForPlayer } from "./scrape.ts"
-import { getTeamNames } from "./sheets.ts"
+import { getPlayerStatsData, getTeamNames, pushData } from "./sheets.ts"
 
 const main = async () => {
 	const auth = await authorize()
@@ -30,6 +30,11 @@ const main = async () => {
 	const rawDataSheetName = await promptRawDataSheetName()
 
 	const teamNames = await getTeamNames(sheets, sheetName, spreadsheetId)
+	const playerStatsData = await getPlayerStatsData(
+		sheets,
+		rawDataSheetName,
+		spreadsheetId
+	)
 
 	const players: TPlayer[] = []
 	while (true) {
@@ -60,15 +65,18 @@ const main = async () => {
 
 	console.log(`Iterating through latest matches with inputted players`)
 	let nextMatchNumber = sortNewestFirst ? 6 : 1
+	let shouldPush = false
 	for (const match of customMatchesWithAllPlayers) {
 		try {
 			const { didTrackMatch, matchNumber } = await checkMatch({
 				match,
 				nextMatchNumber,
+				playerStatsData,
 				teamNames,
 			})
 			if (didTrackMatch) {
 				nextMatchNumber = matchNumber + (sortNewestFirst ? -1 : 1)
+				shouldPush = true
 			}
 		} catch (error) {
 			if (error instanceof Stop) {
@@ -76,6 +84,14 @@ const main = async () => {
 			}
 			throw error
 		}
+	}
+	if (shouldPush) {
+		await pushData({
+			playerStatsData,
+			rawDataSheetName,
+			sheets,
+			spreadsheetId,
+		})
 	}
 }
 

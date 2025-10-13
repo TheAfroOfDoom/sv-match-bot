@@ -2,6 +2,8 @@ import chalk from "chalk"
 import type { sheets_v4 } from "googleapis"
 
 import { deleteToken } from "./googleAuth.ts"
+import { sheetsHeader } from "./stats.ts"
+import { columnToLetter } from "./utils.ts"
 
 export type Sheets = sheets_v4.Sheets
 
@@ -70,7 +72,33 @@ export async function getTeamNames(
 	return rows.map((row) => row[0])
 }
 
-export async function updateSheetRows({
+export async function getPlayerStatsData(
+	sheets: Sheets,
+	rawDataSheetName: string,
+	spreadsheetId: string
+): Promise<(number | string)[][]> {
+	try {
+		process.stdout.write(
+			chalk.gray(`${chalk.yellow("…")} Checking for preexisting data ... `)
+		)
+
+		const colEnd = columnToLetter(sheetsHeader.length)
+		const range = `'${rawDataSheetName}'!A:${colEnd}`
+		const rows = await getSheetRows(
+			sheets,
+			spreadsheetId,
+			range,
+			rawDataSheetName
+		)
+		console.log(`\r${chalk.green("√")}`)
+		return rows
+	} catch (error) {
+		console.log(`\r${chalk.red("×")}`)
+		throw error
+	}
+}
+
+async function updateSheetRows({
 	append = false,
 	sheets,
 	spreadsheetId,
@@ -105,4 +133,34 @@ export async function updateSheetRows({
 		},
 	})
 	return res
+}
+
+export async function pushData({
+	playerStatsData,
+	rawDataSheetName,
+	sheets,
+	spreadsheetId,
+}: {
+	playerStatsData: (number | string)[][]
+	rawDataSheetName: string
+	sheets: Sheets
+	spreadsheetId: string
+}) {
+	try {
+		process.stdout.write(
+			chalk.gray(`${chalk.yellow("…")} Pushing data to Google Sheets ... `)
+		)
+		const colStart = "A"
+		const colEnd = columnToLetter(sheetsHeader.length)
+		await updateSheetRows({
+			sheets,
+			spreadsheetId,
+			range: `${rawDataSheetName}!${colStart}:${colEnd}`,
+			values: playerStatsData,
+		})
+		console.log(`\r${chalk.green("√")}`)
+	} catch (error) {
+		console.log(`\r${chalk.red("×")}`)
+		throw error
+	}
 }
