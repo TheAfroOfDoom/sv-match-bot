@@ -58,8 +58,7 @@ export const checkMatch = async ({
 		(a, b) => a.placement - b.placement
 	)
 
-	console.log()
-	console.log("Match info:")
+	console.log("\nMatch info:")
 	for (const [teamStatsIdx, teamStats] of matchStatsSorted.entries()) {
 		const { kills, players, placementReadable, teamName } = teamStats
 
