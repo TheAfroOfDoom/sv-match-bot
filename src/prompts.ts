@@ -9,10 +9,12 @@ import { scrapePlayerId } from "./scrape.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
 import { placementToReadable } from "./stats.ts"
 
+export class Stop extends Error {}
+
 const formatConfirmationText = (response: string) => {
 	const responseLower = response.toLowerCase()
 	if (["stop", "s"].includes(responseLower)) {
-		process.exit(0)
+		return "stop"
 	} else if (["yes", "y"].includes(responseLower)) {
 		return true
 	} else {
@@ -124,7 +126,9 @@ export const checkMatch = async ({
 		{ onCancel: () => process.exit(0) }
 	)
 
-	if (!matchResponse.confirm) {
+	if (matchResponse.confirm === "stop") {
+		throw new Stop()
+	} else if (!matchResponse.confirm) {
 		return { didTrackMatch: false, matchNumber: nextMatchNumber }
 	}
 
@@ -258,6 +262,9 @@ export const promptAddPlayer = async (): Promise<boolean> => {
 		},
 		{ onCancel: () => process.exit(0) }
 	)
+	if (playerIdResponse.confirm === "stop") {
+		process.exit(0)
+	}
 	return playerIdResponse.confirm
 }
 

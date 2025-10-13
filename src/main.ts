@@ -15,6 +15,7 @@ import {
 	promptRawDataSheetName,
 	promptSheetName,
 	promptSpreadsheetId,
+	Stop,
 } from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { closeBrowser, fetchNewMatchesForPlayer } from "./scrape.ts"
@@ -60,16 +61,20 @@ const main = async () => {
 	console.log(`Iterating through latest matches with inputted players`)
 	let nextMatchNumber = sortNewestFirst ? 6 : 1
 	for (const match of customMatchesWithAllPlayers) {
-		const { didTrackMatch, matchNumber } = await checkMatch({
-			match,
-			nextMatchNumber,
-			rawDataSheetName,
-			sheets,
-			spreadsheetId,
-			teamNames,
-		})
-		if (didTrackMatch) {
-			nextMatchNumber = matchNumber + (sortNewestFirst ? -1 : 1)
+		try {
+			const { didTrackMatch, matchNumber } = await checkMatch({
+				match,
+				nextMatchNumber,
+				teamNames,
+			})
+			if (didTrackMatch) {
+				nextMatchNumber = matchNumber + (sortNewestFirst ? -1 : 1)
+			}
+		} catch (error) {
+			if (error instanceof Stop) {
+				break
+			}
+			throw error
 		}
 	}
 }
