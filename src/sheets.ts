@@ -62,14 +62,26 @@ export async function getTeamNames(
 	sheetName: string,
 	spreadsheetId: string
 ): Promise<string[]> {
-	const range = `'${sheetName}'!B3:B14`
-	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
-	if (rows.length === 0) {
-		throw new Error(
-			"Received undefined sheet-row data (did you remember to input team names?)"
+	try {
+		process.stdout.write(
+			chalk.gray(
+				`${chalk.yellow("…")} Reading team names from spreadsheet ... `
+			)
 		)
+		const range = `'${sheetName}'!B3:B14`
+		const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
+		if (rows.length === 0) {
+			throw new Error(
+				"Received undefined sheet-row data (did you remember to input team names?)"
+			)
+		}
+		const teamNames = rows.map((row) => row[0])
+		console.log(`\r${chalk.green("√")}`)
+		return teamNames
+	} catch (error) {
+		console.log(`\r${chalk.red("×")}`)
+		throw error
 	}
-	return rows.map((row) => row[0])
 }
 
 export async function getPlayerStatsData(
