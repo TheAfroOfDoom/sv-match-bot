@@ -16,6 +16,7 @@ async function getSheetRows(
 		res = await sheets.spreadsheets.values.get({
 			spreadsheetId,
 			range,
+			valueRenderOption: "UNFORMATTED_VALUE",
 		})
 	} catch (error) {
 		if (error.message === "Requested entity was not found.") {
@@ -75,16 +76,31 @@ export async function getTeamNames(
 }
 
 export async function updateSheetRows({
+	append = false,
 	sheets,
 	spreadsheetId,
 	range,
 	values,
 }: {
+	append?: boolean
 	sheets: Sheets
 	spreadsheetId: string
 	range: string
 	values: any[][]
 }) {
+	if (append) {
+		const sheetName = range.split("!")[0]
+		const preExistingValues = await getSheetRows(
+			sheets,
+			spreadsheetId,
+			range,
+			sheetName
+		)
+		// don't duplicate header row if it exists
+		if (preExistingValues.length !== 0) {
+			values = preExistingValues.concat(values.slice(1))
+		}
+	}
 	const res = await sheets.spreadsheets.values.update({
 		spreadsheetId,
 		range,

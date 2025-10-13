@@ -7,12 +7,7 @@ import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { scrapePlayerId } from "./scrape.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
-import {
-	aggregateMatchStats,
-	getPlayers,
-	getTeamPlacement,
-	sumTeamKills,
-} from "./stats.ts"
+import { placementToReadable } from "./stats.ts"
 import { gameNumToRange } from "./utils.ts"
 
 const formatConfirmationText = (response: string) => {
@@ -36,6 +31,7 @@ const validateConfirmationText = (response: string) => {
 export const checkMatch = async ({
 	match,
 	nextMatchNumber,
+	rawDataSheetName,
 	sheets,
 	sheetName,
 	spreadsheetId,
@@ -43,30 +39,78 @@ export const checkMatch = async ({
 }: {
 	match: Match
 	nextMatchNumber: number
+	rawDataSheetName: string
 	sheets: Sheets
 	sheetName: string
 	spreadsheetId: string
 	teamNames: string[]
 }): Promise<{ didTrackMatch: boolean; matchNumber: number }> => {
-	const aggregators = [getTeamPlacement, getPlayers, sumTeamKills] as any[]
-	const matchStats = aggregateMatchStats(match, aggregators)
-	for (const [idx, teamStats] of matchStats.entries()) {
-		teamStats.teamName = teamNames[idx]
+	const matchStatsPerTeam: {
+		[team_id: string]: {
+			kills: number
+			placement: number
+			players: Array<string>
+			teamName: string
+		}
+	} = {}
+
+	const statsPerPlayer: Array<{
+		player: string
+		teamId: string
+		teamName: string
+		placement: number
+		hero: string
+		Kills: number
+		Deaths: number
+		Assists: number
+		HeroEffectiveDamageDone: number
+		HeroEffectiveDamageTaken: number
+		HealingGiven: number
+		HealingGivenSelf: number
+	}> = []
+	for (const {
+		team_id,
+		placement,
+		stats,
+		player,
+		hero,
+	} of match.matchPlayers) {
+		matchStatsPerTeam[team_id] ??= {
+			kills: 0,
+			placement: placement,
+			players: [],
+			teamName: teamNames[Number(team_id)] ?? "",
+		}
+		matchStatsPerTeam[team_id].kills += stats.Kills
+		matchStatsPerTeam[team_id].players.push(player.unique_display_name)
+
+		const entry = {
+			player: player.unique_display_name,
+			teamId: team_id,
+			teamName: teamNames[Number(team_id)] ?? "",
+			placement,
+			hero: hero.name,
+			...stats,
+		}
+		statsPerPlayer.push(entry)
 	}
 
-	const matchStatsSorted = _.cloneDeep(matchStats).sort(
+	const matchStatsSortedByPlacement = Object.values(matchStatsPerTeam).sort(
 		(a, b) => a.placement - b.placement
 	)
 
 	console.log("\nMatch info:")
-	for (const [teamStatsIdx, teamStats] of matchStatsSorted.entries()) {
-		const { kills, players, placementReadable, teamName } = teamStats
+	for (const [
+		teamStatsIdx,
+		teamStats,
+	] of matchStatsSortedByPlacement.entries()) {
+		const { kills, placement, players, teamName } = teamStats
 
 		const playersStr = players
 			.map((p, pIdx) => getPlayerColor(teamStatsIdx * players.length + pIdx)(p))
 			.join(", ")
 		const placementColor = getPlacementColor(teamStatsIdx)
-		const placementStr = placementColor(placementReadable)
+		const placementStr = placementColor(placementToReadable(placement))
 
 		console.log(`${placementStr}: ${teamName} (${playersStr}) (${kills} kills)`)
 	}
@@ -97,10 +141,14 @@ export const checkMatch = async ({
 		{ onCancel: () => process.exit(0) }
 	)
 	await trackMatch({
-		matchStats,
+		matchStats: Object.entries(matchStatsPerTeam)
+			.sort((a, b) => Number(a[0]) - Number(b[0]))
+			.map(([key, val]) => val),
 		matchNumber: matchNumResponse.number,
+		rawDataSheetName,
 		sheets,
 		sheetName,
+		statsPerPlayer,
 		spreadsheetId,
 	})
 
@@ -110,19 +158,87 @@ export const checkMatch = async ({
 export const trackMatch = async ({
 	matchStats,
 	matchNumber,
+	rawDataSheetName,
 	sheets,
 	sheetName,
+	statsPerPlayer,
 	spreadsheetId,
 }: {
-	matchStats: any
+	matchStats: any[]
 	matchNumber: number
+	rawDataSheetName: string
 	sheets: Sheets
 	sheetName: string
+	statsPerPlayer: Array<{
+		player: string
+		teamId: string
+		teamName: string
+		placement: number
+		hero: string
+		Kills: number
+		Deaths: number
+		Assists: number
+		HeroEffectiveDamageDone: number
+		HeroEffectiveDamageTaken: number
+		HealingGiven: number
+		HealingGivenSelf: number
+	}>
 	spreadsheetId: string
 }) => {
-	const values = matchStats.map((team) => [team.placementReadable, team.kills])
+	const teamPlacementsAndKills = matchStats.map((team) => [
+		placementToReadable(team.placement),
+		team.kills,
+	])
 	const range = `'${sheetName}'!${gameNumToRange(matchNumber)}`
-	await updateSheetRows({ sheets, spreadsheetId, range, values })
+	await updateSheetRows({
+		sheets,
+		spreadsheetId,
+		range,
+		values: teamPlacementsAndKills,
+	})
+
+	const headerStats = [
+		"Kills",
+		"Deaths",
+		"Assists",
+		"HeroEffectiveDamageDone",
+		"HeroEffectiveDamageTaken",
+		"HealingGiven",
+		"HealingGivenSelf",
+	] as const
+	const header = [
+		"matchNum",
+		"teamNum",
+		"teamName",
+		"player",
+		"placement",
+		"hero",
+	].concat(headerStats)
+	const rawDataValues: (number | string)[][] = []
+	for (const playerStats of statsPerPlayer) {
+		const playerStatsFlat = [
+			matchNumber,
+			Number(playerStats.teamId),
+			playerStats.teamName,
+			playerStats.player,
+			playerStats.placement,
+			playerStats.hero,
+		]
+		for (const tag of headerStats) {
+			playerStatsFlat.push(playerStats[tag])
+		}
+		rawDataValues.push(playerStatsFlat)
+	}
+	const colStart = "A"
+	const colEnd = String.fromCharCode(colStart.charCodeAt(0) + header.length)
+	await updateSheetRows({
+		append: true,
+		sheets,
+		spreadsheetId,
+		range: `${rawDataSheetName}!${colStart}:${colEnd}`,
+		values: [header, ...rawDataValues],
+	})
+
 	console.log(`Successfully updated match ${matchNumber}`)
 }
 
@@ -185,7 +301,7 @@ export const promptSpreadsheetId = async (): Promise<string> => {
 }
 
 export const promptSheetName = async (): Promise<string> => {
-	const message = "Google Sheets sheet name:"
+	const message = "Google Sheets team names sheet name:"
 	const initial = await getPromptAnswer(message)
 	const { name } = await prompts(
 		{
@@ -193,6 +309,22 @@ export const promptSheetName = async (): Promise<string> => {
 			name: "name",
 			message,
 			initial: initial ?? "SheetTest",
+		},
+		{ onCancel: () => process.exit(0) }
+	)
+	await savePromptAnswer(message, name)
+	return name
+}
+
+export const promptRawDataSheetName = async (): Promise<string> => {
+	const message = "Google Sheets raw data sheet name:"
+	const initial = await getPromptAnswer(message)
+	const { name } = await prompts(
+		{
+			type: "text",
+			name: "name",
+			message,
+			initial: initial ?? "Raw Data",
 		},
 		{ onCancel: () => process.exit(0) }
 	)
