@@ -8,7 +8,6 @@ import type { Match } from "./fetch.ts"
 import { scrapePlayerId } from "./scrape.ts"
 import { type Sheets, updateSheetRows } from "./sheets.ts"
 import { placementToReadable } from "./stats.ts"
-import { gameNumToRange } from "./utils.ts"
 
 const formatConfirmationText = (response: string) => {
 	const responseLower = response.toLowerCase()
@@ -33,7 +32,6 @@ export const checkMatch = async ({
 	nextMatchNumber,
 	rawDataSheetName,
 	sheets,
-	sheetName,
 	spreadsheetId,
 	teamNames,
 }: {
@@ -41,7 +39,6 @@ export const checkMatch = async ({
 	nextMatchNumber: number
 	rawDataSheetName: string
 	sheets: Sheets
-	sheetName: string
 	spreadsheetId: string
 	teamNames: string[]
 }): Promise<{ didTrackMatch: boolean; matchNumber: number }> => {
@@ -141,13 +138,9 @@ export const checkMatch = async ({
 		{ onCancel: () => process.exit(0) }
 	)
 	await trackMatch({
-		matchStats: Object.entries(matchStatsPerTeam)
-			.sort((a, b) => Number(a[0]) - Number(b[0]))
-			.map(([key, val]) => val),
 		matchNumber: matchNumResponse.number,
 		rawDataSheetName,
 		sheets,
-		sheetName,
 		statsPerPlayer,
 		spreadsheetId,
 	})
@@ -156,19 +149,15 @@ export const checkMatch = async ({
 }
 
 export const trackMatch = async ({
-	matchStats,
 	matchNumber,
 	rawDataSheetName,
 	sheets,
-	sheetName,
 	statsPerPlayer,
 	spreadsheetId,
 }: {
-	matchStats: any[]
 	matchNumber: number
 	rawDataSheetName: string
 	sheets: Sheets
-	sheetName: string
 	statsPerPlayer: Array<{
 		player: string
 		teamId: string
@@ -185,18 +174,6 @@ export const trackMatch = async ({
 	}>
 	spreadsheetId: string
 }) => {
-	const teamPlacementsAndKills = matchStats.map((team) => [
-		placementToReadable(team.placement),
-		team.kills,
-	])
-	const range = `'${sheetName}'!${gameNumToRange(matchNumber)}`
-	await updateSheetRows({
-		sheets,
-		spreadsheetId,
-		range,
-		values: teamPlacementsAndKills,
-	})
-
 	const headerStats = [
 		"Kills",
 		"Deaths",
