@@ -17,34 +17,6 @@ export class SuperviveUUID {
 	}
 }
 
-// HARDCODED
-// these could be converted to be dynamic with some parameters, e.g.
-// rangeLength: number
-const colMap = {
-	1: ["C", "D"],
-	2: ["E", "F"],
-	3: ["G", "H"],
-	4: ["I", "J"],
-	5: ["K", "L"],
-	6: ["M", "N"],
-	7: ["O", "P"],
-	8: ["Q", "R"],
-}
-
-export const gameNumToRange = (gameNum: number) => {
-	// HARDCODED
-	// Sheet supports games 1-8
-	if (gameNum < 1 || gameNum > 8) {
-		throw new Error(`Invalid gameNum: ${gameNum}`)
-	}
-
-	const colRange = colMap[gameNum]
-
-	// HARDCODED
-	const rows = [3, 14]
-	return `${colRange[0]}${rows[0]}:${colRange[1]}${rows[1]}`
-}
-
 export const playerTagToOpggUrl = (playerTag: string) =>
 	`https://op.gg/supervive/players/steam-${playerTag.replace("#", "%23")}`
 

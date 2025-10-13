@@ -65,7 +65,6 @@ const main = async () => {
 			nextMatchNumber,
 			rawDataSheetName,
 			sheets,
-			sheetName,
 			spreadsheetId,
 			teamNames,
 		})
