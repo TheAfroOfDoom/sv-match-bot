@@ -12,6 +12,7 @@ import {
 	promptAddPlayer,
 	promptMatchSortOrder,
 	promptPlayer,
+	promptRawDataSheetName,
 	promptSheetName,
 	promptSpreadsheetId,
 } from "./prompts.ts"
@@ -25,6 +26,7 @@ const main = async () => {
 
 	const spreadsheetId = await promptSpreadsheetId()
 	const sheetName = await promptSheetName()
+	const rawDataSheetName = await promptRawDataSheetName()
 
 	const teamNames = await getTeamNames(sheets, sheetName, spreadsheetId)
 
@@ -61,6 +63,7 @@ const main = async () => {
 		const { didTrackMatch, matchNumber } = await checkMatch({
 			match,
 			nextMatchNumber,
+			rawDataSheetName,
 			sheets,
 			sheetName,
 			spreadsheetId,
