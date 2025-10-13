@@ -32,3 +32,15 @@ export const isValidUuid = (
 
 export const insertHyphensIntoUuid = (val: string) =>
 	`${val.slice(0, 8)}-${val.slice(8, 12)}-${val.slice(12, 16)}-${val.slice(16, 20)}-${val.slice(20)}`
+
+// https://stackoverflow.com/a/21231012/13789724
+export const columnToLetter = (column: number) => {
+	let temp: number
+	let letter = ""
+	while (column > 0) {
+		temp = (column - 1) % 26
+		letter = String.fromCharCode(temp + 65) + letter
+		column = (column - temp - 1) / 26
+	}
+	return letter
+}
