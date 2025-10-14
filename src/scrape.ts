@@ -7,6 +7,7 @@ import {
 	insertHyphensIntoUuid,
 	playerTagToOpggUrl,
 	SuperviveUUID,
+	wrapLog,
 } from "./utils.ts"
 
 const userAgent =
@@ -29,31 +30,30 @@ export const closeBrowser = async () => {
 export const scrapePlayerId = async (
 	playerTag: string
 ): Promise<SuperviveUUID> => {
-	process.stdout.write(
-		chalk.gray(
-			`${chalk.yellow("…")} Fetching UUID for ${customColors.cyanVeryBright(playerTag)} ... `
-		)
+	return wrapLog(
+		async () => {
+			const browser = await getBrowser()
+			const url = playerTagToOpggUrl(playerTag)
+
+			const playerDataUrl = await getPlayerDataRequestUrl(browser, url)
+			const rawUuidRegexMatch = playerDataUrl.match(
+				/^https:\/\/op\.gg\/supervive\/api\/players\/steam-([0-9a-f]{32})\/matches\?page=1$/
+			)
+			if (rawUuidRegexMatch === null) {
+				throw new Error(`Failed to parse UUID for ${playerTag}`)
+			}
+			const rawUuid = rawUuidRegexMatch[1]
+			const formattedUuid = insertHyphensIntoUuid(rawUuid)
+			const svUuid = new SuperviveUUID(formattedUuid)
+
+			process.stdout.write(chalk.cyan(svUuid.getFormatted()))
+
+			return svUuid
+		},
+		{
+			inProgressMsg: `Fetching UUID for ${customColors.cyanVeryBright(playerTag)}`,
+		}
 	)
-
-	const browser = await getBrowser()
-	const url = playerTagToOpggUrl(playerTag)
-
-	const playerDataUrl = await getPlayerDataRequestUrl(browser, url)
-	const rawUuidRegexMatch = playerDataUrl.match(
-		/^https:\/\/op\.gg\/supervive\/api\/players\/steam-([0-9a-f]{32})\/matches\?page=1$/
-	)
-	if (rawUuidRegexMatch === null) {
-		console.log(`\r${chalk.red("×")}`)
-		throw new Error(`Failed to parse UUID for ${playerTag}`)
-	}
-	const rawUuid = rawUuidRegexMatch[1]
-	const formattedUuid = insertHyphensIntoUuid(rawUuid)
-	const svUuid = new SuperviveUUID(formattedUuid)
-
-	process.stdout.write(chalk.cyan(svUuid.getFormatted()))
-	console.log(`\r${chalk.green("√")}`)
-
-	return svUuid
 }
 
 const getPlayerDataRequestUrl = async (

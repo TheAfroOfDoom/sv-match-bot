@@ -1,3 +1,5 @@
+import chalk from "chalk"
+
 export class SuperviveUUID {
 	val: string
 
@@ -43,4 +45,23 @@ export const columnToLetter = (column: number) => {
 		column = (column - temp - 1) / 26
 	}
 	return letter
+}
+
+export const wrapLog = async <T>(
+	func: () => T,
+	{
+		inProgressMsg,
+	}: {
+		inProgressMsg: string
+	}
+): Promise<T> => {
+	try {
+		process.stdout.write(chalk.gray(chalk.yellow("…"), `${inProgressMsg} ... `))
+		const result = await func()
+		process.stdout.write(`\r${chalk.green("√")}\n`)
+		return result
+	} catch (error) {
+		process.stdout.write(`\r${chalk.red("×")}\n`)
+		throw error
+	}
 }
