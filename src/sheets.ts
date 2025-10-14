@@ -20,7 +20,7 @@ async function getSheetRows(
 			range,
 			valueRenderOption: "UNFORMATTED_VALUE",
 		})
-	} catch (error) {
+	} catch (error: any) {
 		if (error.message === "Requested entity was not found.") {
 			const msg = `${chalk.red("Failed to access Google Sheets spreadsheet with ID: ")}${chalk.yellow(spreadsheetId)}`
 			console.error(msg)

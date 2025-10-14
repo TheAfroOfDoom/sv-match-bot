@@ -23,7 +23,7 @@ async function loadSavedCredentialsIfExist() {
 }
 
 /** Serializes credentials to a file compatible with GoogleAuth.fromJSON. */
-async function saveCredentials(client) {
+async function saveCredentials(client: any) {
 	const content = await fs.readFile(CREDENTIALS_PATH, "utf-8")
 	const keys = JSON.parse(content)
 	const key = keys.installed || keys.web
