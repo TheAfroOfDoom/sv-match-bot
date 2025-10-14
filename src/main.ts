@@ -1,4 +1,5 @@
 import { google } from "googleapis"
+import PrettyError from "pretty-error"
 
 import { savePlayerId } from "./cache.ts"
 import {
@@ -22,6 +23,11 @@ import { closeBrowser, fetchNewMatchesForPlayer } from "./scrape.ts"
 import { getPlayerStatsData, getTeamNames, pushData } from "./sheets.ts"
 
 const main = async () => {
+	const prettyError = PrettyError.start()
+	prettyError.appendStyle({
+		"pretty-error > trace > item": { marginBottom: 0 },
+	})
+
 	const auth = await authorize()
 	const sheets = google.sheets({ version: "v4", auth })
 
