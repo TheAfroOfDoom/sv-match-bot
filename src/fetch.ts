@@ -21,9 +21,15 @@ export const getMatch = async (svUuid: SuperviveUUID): Promise<Match> => {
 	}
 }
 
-export const getPlayer = async (svUuid: SuperviveUUID): Promise<TPlayer> => {
+export const getPlayer = async (
+	svUuid: SuperviveUUID,
+	refreshMatchesPromise?: Promise<boolean>
+): Promise<TPlayer> => {
 	const param = svUuid.getRaw()
 	const playerUrl = `https://op.gg/supervive/api/players/steam-${param}/matches`
+	if (refreshMatchesPromise !== undefined) {
+		await refreshMatchesPromise
+	}
 	const response = await fetch(playerUrl)
 	const result = Player.safeParse(await response.json())
 	if (!result.success) {
@@ -41,9 +47,9 @@ const getMatchIdsFromPlayer = (player: TPlayer): SuperviveUUID[] => {
 }
 
 export const getMatchesFromPlayer = async (
-	player: TPlayer
+	playerPromise: Promise<TPlayer>
 ): Promise<Match[]> => {
-	const matchIds = getMatchIdsFromPlayer(player)
+	const matchIds = getMatchIdsFromPlayer(await playerPromise)
 	const matches = await Promise.all(matchIds.map((id) => getMatch(id)))
 	const sortedMatches = matches.sort(
 		(a, b) => a.matchEnd.getTime() - b.matchEnd.getTime()

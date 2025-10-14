@@ -3,7 +3,6 @@ import { google } from "googleapis"
 import PrettyError from "pretty-error"
 
 import { savePlayerId } from "./cache.ts"
-import { customColors } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import {
 	getMatchesFromPlayer,
@@ -47,50 +46,43 @@ const main = async () => {
 		spreadsheetId
 	)
 
-	let firstPlayerTag: string
 	let matchesPromise: Promise<Match[]>
 	let refreshMatchesPromise: Promise<boolean>
-	const players: TPlayer[] = []
+	const playerPromises: Promise<TPlayer>[] = []
 	while (true) {
 		const { playerTag, playerUuid } = await promptPlayer()
 		await savePlayerId(playerTag, playerUuid)
 
-		if (players.length === 0) {
-			firstPlayerTag = playerTag
+		if (playerPromises.length === 0) {
 			refreshMatchesPromise = fetchNewMatchesForPlayer(playerTag)
+			const playerPromise = getPlayer(playerUuid, refreshMatchesPromise)
+			matchesPromise = getMatchesFromPlayer(playerPromise)
+			playerPromises.push(playerPromise)
+		} else {
+			playerPromises.push(getPlayer(playerUuid))
 		}
-
-		const player = await getPlayer(playerUuid)
-		if (players.length === 0) {
-			matchesPromise = getMatchesFromPlayer(player)
-		}
-
-		players.push(player)
 
 		const addAnotherPlayer = await promptAddPlayer()
 		if (!addAnotherPlayer) {
 			break
 		}
 	}
-	await closeBrowser()
-
 	const sortNewestFirst = await promptMatchSortOrder()
+	const players: TPlayer[] = await wrapLog(
+		async () => await Promise.all(playerPromises),
+		{ inProgressMsg: `Fetching player pages` }
+	)
+	await closeBrowser()
 
 	const teamNames = await wrapLog(async () => await teamNamesPromise, {
 		inProgressMsg: `Reading team names from spreadsheet`,
 	})
 
-	const didRefreshMatches = await wrapLog(
-		async () => await refreshMatchesPromise,
-		{
-			inProgressMsg: `Refreshing match list for ${customColors.cyanVeryBright(firstPlayerTag!)}`,
-		}
-	)
+	const didRefreshMatches = await refreshMatchesPromise!
 	if (!didRefreshMatches) {
-		console.log(`\r${chalk.red("×")}`)
 		console.error(
 			chalk.yellow(
-				"Failed to fetch new player matches -- match list may be outdated"
+				`${chalk.red("×")} Failed to refresh match list -- it may be outdated`
 			)
 		)
 	}
