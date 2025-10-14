@@ -73,18 +73,12 @@ const getPlayerDataRequestUrl = async (
 
 export const fetchNewMatchesForPlayer = async (
 	playerTag: string
-): Promise<void> => {
-	process.stdout.write(
-		chalk.gray(
-			`${chalk.yellow("…")} Fetching new matches for ${customColors.cyanVeryBright(playerTag)} ... `
-		)
-	)
-
+): Promise<boolean> => {
 	const browser = await getBrowser()
 	const url = playerTagToOpggUrl(playerTag)
 	const page = await browser.newPage({ userAgent })
 
-	const { promise, resolve } = makeDeferredPromise<void>()
+	const { promise, resolve } = makeDeferredPromise<boolean>()
 	page.on("response", async (response) => {
 		const method = response.request().method()
 		if (method !== "POST") {
@@ -94,20 +88,16 @@ export const fetchNewMatchesForPlayer = async (
 			return
 		}
 
+		let result
 		await response.finished()
 		if (response.status() !== 200) {
-			console.log(`\r${chalk.red("×")}`)
-			console.error(
-				chalk.yellow(
-					"Failed to fetch new player matches -- match list may be outdated"
-				)
-			)
+			result = false
 		} else {
-			console.log(`\r${chalk.green("√")}`)
+			result = true
 		}
 
 		await page.close()
-		resolve()
+		resolve(result)
 	})
 
 	await page.goto(url)

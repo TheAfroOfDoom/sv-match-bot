@@ -18,6 +18,44 @@ export const placementToReadable = (placement: number) => {
 	return map[idx]
 }
 
+export const flattenPlayerStats = ({
+	matchNumber,
+	statsPerPlayer,
+}: {
+	matchNumber: number
+	statsPerPlayer: Array<{
+		player: string
+		teamId: string
+		teamName: string
+		placement: number
+		hero: string
+		Kills: number
+		Deaths: number
+		Assists: number
+		HeroEffectiveDamageDone: number
+		HeroEffectiveDamageTaken: number
+		HealingGiven: number
+		HealingGivenSelf: number
+	}>
+}) => {
+	const flatPlayerStats: (number | string)[][] = []
+	for (const playerStats of statsPerPlayer) {
+		const row = [
+			matchNumber,
+			Number(playerStats.teamId),
+			playerStats.teamName,
+			playerStats.player,
+			playerStats.placement,
+			playerStats.hero,
+		]
+		for (const tag of sheetsHeaderStats) {
+			row.push(playerStats[tag])
+		}
+		flatPlayerStats.push(row)
+	}
+	return flatPlayerStats
+}
+
 export const sheetsHeaderStats = [
 	"Kills",
 	"Deaths",

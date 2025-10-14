@@ -62,45 +62,31 @@ export async function getTeamNames(
 	sheetName: string,
 	spreadsheetId: string
 ): Promise<string[]> {
-	return wrapLog(
-		async () => {
-			const range = `'${sheetName}'!B3:B14`
-			const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
-			if (rows.length === 0) {
-				throw new Error(
-					"Received undefined sheet-row data (did you remember to input team names?)"
-				)
-			}
-			const teamNames = rows.map((row) => row[0])
-			return teamNames
-		},
-		{
-			inProgressMsg: `Reading team names from spreadsheet`,
-		}
-	)
+	const range = `'${sheetName}'!B3:B14`
+	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
+	if (rows.length === 0) {
+		throw new Error(
+			"Received undefined sheet-row data (did you remember to input team names?)"
+		)
+	}
+	const teamNames = rows.map((row) => row[0])
+	return teamNames
 }
 
-export async function getPlayerStatsData(
+export async function getPreExistingMatchData(
 	sheets: Sheets,
 	rawDataSheetName: string,
 	spreadsheetId: string
 ): Promise<(number | string)[][]> {
-	return wrapLog(
-		async () => {
-			const colEnd = columnToLetter(sheetsHeader.length)
-			const range = `'${rawDataSheetName}'!A:${colEnd}`
-			const rows = await getSheetRows(
-				sheets,
-				spreadsheetId,
-				range,
-				rawDataSheetName
-			)
-			return rows
-		},
-		{
-			inProgressMsg: `Checking for preexisting data`,
-		}
+	const colEnd = columnToLetter(sheetsHeader.length)
+	const range = `'${rawDataSheetName}'!A:${colEnd}`
+	const rows = await getSheetRows(
+		sheets,
+		spreadsheetId,
+		range,
+		rawDataSheetName
 	)
+	return rows
 }
 
 async function updateSheetRows({
@@ -126,12 +112,12 @@ async function updateSheetRows({
 }
 
 export async function pushData({
-	playerStatsData,
+	allMatchData,
 	rawDataSheetName,
 	sheets,
 	spreadsheetId,
 }: {
-	playerStatsData: (number | string)[][]
+	allMatchData: (number | string)[][]
 	rawDataSheetName: string
 	sheets: Sheets
 	spreadsheetId: string
@@ -144,7 +130,7 @@ export async function pushData({
 				sheets,
 				spreadsheetId,
 				range: `${rawDataSheetName}!${colStart}:${colEnd}`,
-				values: playerStatsData,
+				values: allMatchData,
 			})
 		},
 		{ inProgressMsg: `Pushing data to Google Sheets` }

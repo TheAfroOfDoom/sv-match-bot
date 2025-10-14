@@ -1,16 +1,11 @@
 import chalk from "chalk"
-import _ from "lodash"
 import prompts from "prompts"
 
 import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
 import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import type { Match } from "./fetch.ts"
 import { scrapePlayerId } from "./scrape.ts"
-import {
-	placementToReadable,
-	sheetsHeader,
-	sheetsHeaderStats,
-} from "./stats.ts"
+import { flattenPlayerStats, placementToReadable } from "./stats.ts"
 
 export class Stop extends Error {}
 
@@ -35,14 +30,16 @@ const validateConfirmationText = (response: string) => {
 export const checkMatch = async ({
 	match,
 	nextMatchNumber,
-	playerStatsData,
 	teamNames,
 }: {
 	match: Match
-	playerStatsData: (number | string)[][]
 	nextMatchNumber: number
 	teamNames: string[]
-}): Promise<{ didTrackMatch: boolean; matchNumber: number }> => {
+}): Promise<{
+	didTrackMatch: boolean
+	matchData: (number | string)[][]
+	matchNumber: number
+}> => {
 	const matchStatsPerTeam: {
 		[team_id: string]: {
 			kills: number
@@ -128,7 +125,7 @@ export const checkMatch = async ({
 	if (matchResponse.confirm === "stop") {
 		throw new Stop()
 	} else if (!matchResponse.confirm) {
-		return { didTrackMatch: false, matchNumber: nextMatchNumber }
+		return { didTrackMatch: false, matchData: [], matchNumber: nextMatchNumber }
 	}
 
 	const matchNumResponse = await prompts(
@@ -140,54 +137,15 @@ export const checkMatch = async ({
 		},
 		{ onCancel: () => process.exit(0) }
 	)
-	await trackMatch({
+	const playerStatsFlat = flattenPlayerStats({
 		matchNumber: matchNumResponse.number,
-		playerStatsData,
 		statsPerPlayer,
 	})
 
-	return { didTrackMatch: true, matchNumber: matchNumResponse.number }
-}
-
-export const trackMatch = async ({
-	matchNumber,
-	playerStatsData,
-	statsPerPlayer,
-}: {
-	matchNumber: number
-	playerStatsData: (number | string)[][]
-	statsPerPlayer: Array<{
-		player: string
-		teamId: string
-		teamName: string
-		placement: number
-		hero: string
-		Kills: number
-		Deaths: number
-		Assists: number
-		HeroEffectiveDamageDone: number
-		HeroEffectiveDamageTaken: number
-		HealingGiven: number
-		HealingGivenSelf: number
-	}>
-}) => {
-	if (playerStatsData.length === 0) {
-		playerStatsData.push(sheetsHeader.slice())
-	}
-
-	for (const playerStats of statsPerPlayer) {
-		const playerStatsFlat = [
-			matchNumber,
-			Number(playerStats.teamId),
-			playerStats.teamName,
-			playerStats.player,
-			playerStats.placement,
-			playerStats.hero,
-		]
-		for (const tag of sheetsHeaderStats) {
-			playerStatsFlat.push(playerStats[tag])
-		}
-		playerStatsData.push(playerStatsFlat)
+	return {
+		didTrackMatch: true,
+		matchData: playerStatsFlat,
+		matchNumber: matchNumResponse.number,
 	}
 }
 

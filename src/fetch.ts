@@ -41,17 +41,13 @@ const getMatchIdsFromPlayer = (player: TPlayer): SuperviveUUID[] => {
 }
 
 export const getMatchesFromPlayer = async (
-	player: TPlayer,
-	sortNewestFirst: boolean
-) => {
+	player: TPlayer
+): Promise<Match[]> => {
 	const matchIds = getMatchIdsFromPlayer(player)
 	const matches = await Promise.all(matchIds.map((id) => getMatch(id)))
 	const sortedMatches = matches.sort(
 		(a, b) => a.matchEnd.getTime() - b.matchEnd.getTime()
 	)
-	if (sortNewestFirst) {
-		sortedMatches.reverse()
-	}
 	return sortedMatches
 }
 
