@@ -24,6 +24,7 @@ export const getBrowser = async () => {
 export const closeBrowser = async () => {
 	if (activeBrowser !== undefined) {
 		await activeBrowser.close()
+		activeBrowser = undefined
 	}
 }
 
