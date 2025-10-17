@@ -75,7 +75,6 @@ const main = async () => {
 		async () => await Promise.all(playerPromises),
 		{ inProgressMsg: `Fetching player pages` }
 	)
-	await closeBrowser()
 
 	const didRefreshMatches = await refreshMatchesPromise!
 	if (!didRefreshMatches) {
@@ -120,6 +119,8 @@ const main = async () => {
 			throw error
 		}
 	}
+	closeBrowser()
+
 	if (shouldPush) {
 		const preExistingMatchData = await wrapLog(
 			async () => await preExistingMatchDataPromise,

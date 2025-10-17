@@ -136,7 +136,7 @@ export const checkMatch = async ({
 		},
 		{ onCancel: () => process.exit(0) }
 	)
-	const playerStatsFlat = flattenPlayerStats({
+	const playerStatsFlat = await flattenPlayerStats({
 		matchId: match.matchId,
 		matchNumber: matchNumResponse.number,
 		statsPerPlayer,

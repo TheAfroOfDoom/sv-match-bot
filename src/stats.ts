@@ -1,3 +1,5 @@
+import { getOrScrapePlayerId } from "./fetch.ts"
+
 export const placementToReadable = (placement: number) => {
 	const map = [
 		"1st",
@@ -18,7 +20,7 @@ export const placementToReadable = (placement: number) => {
 	return map[idx]
 }
 
-export const flattenPlayerStats = ({
+export const flattenPlayerStats = async ({
 	matchId,
 	matchNumber,
 	statsPerPlayer,
@@ -42,8 +44,10 @@ export const flattenPlayerStats = ({
 }) => {
 	const flatPlayerStats: (number | string)[][] = []
 	for (const playerStats of statsPerPlayer) {
+		const playerId = await getOrScrapePlayerId(playerStats.player)
 		const row = [
 			matchId,
+			playerId.getFormatted(),
 			matchNumber,
 			Number(playerStats.teamId),
 			playerStats.teamName,
@@ -71,6 +75,7 @@ export const sheetsHeaderStats = [
 
 export const sheetsHeader = [
 	"matchId",
+	"playerId",
 	"matchNum",
 	"teamNum",
 	"teamName",
