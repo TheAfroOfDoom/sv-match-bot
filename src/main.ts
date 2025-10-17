@@ -68,15 +68,16 @@ const main = async () => {
 		}
 	}
 	const sortNewestFirst = await promptMatchSortOrder()
+
+	const teamNames = await wrapLog(async () => await teamNamesPromise, {
+		inProgressMsg: `Reading team names from spreadsheet`,
+	})
+
 	const players: TPlayer[] = await wrapLog(
 		async () => await Promise.all(playerPromises),
 		{ inProgressMsg: `Fetching player pages` }
 	)
 	await closeBrowser()
-
-	const teamNames = await wrapLog(async () => await teamNamesPromise, {
-		inProgressMsg: `Reading team names from spreadsheet`,
-	})
 
 	const didRefreshMatches = await refreshMatchesPromise!
 	if (!didRefreshMatches) {
