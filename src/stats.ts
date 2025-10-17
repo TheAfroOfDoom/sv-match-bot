@@ -19,9 +19,11 @@ export const placementToReadable = (placement: number) => {
 }
 
 export const flattenPlayerStats = ({
+	matchId,
 	matchNumber,
 	statsPerPlayer,
 }: {
+	matchId: string
 	matchNumber: number
 	statsPerPlayer: Array<{
 		player: string
@@ -41,6 +43,7 @@ export const flattenPlayerStats = ({
 	const flatPlayerStats: (number | string)[][] = []
 	for (const playerStats of statsPerPlayer) {
 		const row = [
+			matchId,
 			matchNumber,
 			Number(playerStats.teamId),
 			playerStats.teamName,
@@ -67,6 +70,7 @@ export const sheetsHeaderStats = [
 ] as const
 
 export const sheetsHeader = [
+	"matchId",
 	"matchNum",
 	"teamNum",
 	"teamName",

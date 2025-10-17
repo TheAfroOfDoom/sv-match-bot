@@ -7,6 +7,7 @@ import { SuperviveUUID } from "./utils.ts"
 
 export type Match = {
 	matchEnd: Date
+	matchId: string
 	matchPlayers: TMatchPlayers
 }
 
@@ -17,6 +18,7 @@ export const getMatch = async (svUuid: SuperviveUUID): Promise<Match> => {
 	const matchPlayers = MatchPlayers.parse(await response.json())
 	return {
 		matchEnd: new Date(matchPlayers[0].match_end),
+		matchId: svUuid.getFormatted(),
 		matchPlayers,
 	}
 }
