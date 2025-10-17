@@ -1,10 +1,9 @@
 import chalk from "chalk"
 import prompts from "prompts"
 
-import { getPlayerId, getPromptAnswer, savePromptAnswer } from "./cache.ts"
+import { getPromptAnswer, savePromptAnswer } from "./cache.ts"
 import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
-import type { Match } from "./fetch.ts"
-import { scrapePlayerId } from "./scrape.ts"
+import { getOrScrapePlayerId, type Match } from "./fetch.ts"
 import { flattenPlayerStats, placementToReadable } from "./stats.ts"
 
 export class Stop extends Error {}
@@ -169,8 +168,7 @@ const promptPlayerTag = async (): Promise<string> => {
 
 export const promptPlayer = async () => {
 	const playerTag = await promptPlayerTag()
-	const playerUuid =
-		(await getPlayerId(playerTag)) ?? (await scrapePlayerId(playerTag))
+	const playerUuid = await getOrScrapePlayerId(playerTag)
 	return {
 		playerTag,
 		playerUuid,

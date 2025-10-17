@@ -2,7 +2,6 @@ import chalk from "chalk"
 import { google } from "googleapis"
 import PrettyError from "pretty-error"
 
-import { savePlayerId } from "./cache.ts"
 import type { Match } from "./fetch.ts"
 import {
 	getMatchesFromPlayer,
@@ -51,7 +50,6 @@ const main = async () => {
 	const playerPromises: Promise<TPlayer>[] = []
 	while (true) {
 		const { playerTag, playerUuid } = await promptPlayer()
-		await savePlayerId(playerTag, playerUuid)
 
 		if (playerPromises.length === 0) {
 			refreshMatchesPromise = fetchNewMatchesForPlayer(playerTag)

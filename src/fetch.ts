@@ -1,8 +1,10 @@
 import chalk from "chalk"
 
+import { getPlayerId, savePlayerId } from "./cache.ts"
 import { MatchPlayers, type TMatchPlayers } from "./schema/MatchPlayers.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { Player } from "./schema/Player.ts"
+import { scrapePlayerId } from "./scrape.ts"
 import { SuperviveUUID } from "./utils.ts"
 
 export type Match = {
@@ -72,3 +74,15 @@ const matchIncludesPlayer = (match: Match, player: TPlayer): boolean =>
 		(matchPlayer) =>
 			matchPlayer.player_id_encoded === player.data[0].player_id_encoded
 	)
+
+export const getOrScrapePlayerId = async (
+	playerTag: string
+): Promise<SuperviveUUID> => {
+	let playerId = await getPlayerId(playerTag)
+	if (playerId !== undefined) {
+		return playerId
+	}
+	playerId = await scrapePlayerId(playerTag)
+	await savePlayerId(playerTag, playerId)
+	return playerId
+}
