@@ -5,6 +5,7 @@ import { getPromptAnswer, savePromptAnswer } from "./cache.ts"
 import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import { getOrScrapePlayerId, type Match } from "./fetch.ts"
 import { flattenPlayerStats, placementToReadable } from "./stats.ts"
+import { hunterIds } from "./utils.ts"
 
 export class Stop extends Error {}
 
@@ -67,7 +68,7 @@ export const checkMatch = async ({
 		placement,
 		stats,
 		player,
-		hero,
+		hero_asset_id,
 	} of match.matchPlayers) {
 		matchStatsPerTeam[team_id] ??= {
 			kills: 0,
@@ -83,7 +84,7 @@ export const checkMatch = async ({
 			teamId: team_id,
 			teamName: teamNames[Number(team_id)] ?? "",
 			placement,
-			hero: hero.name,
+			hero: hunterIds[hero_asset_id] ?? hero_asset_id,
 			...stats,
 		}
 		statsPerPlayer.push(entry)

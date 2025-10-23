@@ -65,3 +65,27 @@ export const wrapLog = async <T>(
 		throw error
 	}
 }
+
+export const hunterIds: { [hero_asset_id: string]: string } = {
+	ghost: "hero:assault",
+	zeph: "hero:backlinehealer",
+	carbine: "hero:bountyhunter",
+	crysta: "hero:burstcaster",
+	saros: "hero:farshot",
+	felix: "hero:firefox",
+	shiv: "hero:flex",
+	celeste: "hero:freeze",
+	hudson: "hero:gunner",
+	kingpin: "hero:hookguy",
+	myth: "hero:huntress",
+	elluna: "hero:reshealer",
+	bishop: "hero:rocketjumper",
+	brall: "hero:ronin",
+	oath: "hero:shieldbot",
+	shrike: "hero:sniper",
+	jin: "hero:stalker",
+	joule: "hero:storm",
+	eva: "hero:succubus",
+	beebo: "hero:beebo",
+	void: "hero:void",
+}

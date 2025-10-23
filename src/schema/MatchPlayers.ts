@@ -35,11 +35,6 @@ const MatchPlayer = z.object({
 		display_name: z.string(),
 		unique_display_name: z.string(),
 	}),
-	hero: z.object({
-		head_image_url: z.string(),
-		name: z.string(),
-		abilities: PlayerAbilities,
-	}),
 	ability_events: z.array(
 		z.object({
 			hotkey: z.string(),
