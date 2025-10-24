@@ -90,5 +90,6 @@ export const hunterIds: { [hero_asset_id: string]: string } = {
 	"hero:void": "Void",
 	"hero:wukong": "Wukong",
 	"hero:earthtank": "Tetra",
+	"hero:alchemist": "Mercury",
 	"hero:reaper": "Nyx",
 }
