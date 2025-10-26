@@ -21,7 +21,7 @@ import {
 } from "./prompts.ts"
 import type { TPlayer } from "./schema/Player.ts"
 import { closeBrowser, fetchNewMatchesForPlayer } from "./scrape.ts"
-import { getPreExistingMatchData, getTeamNames, pushData } from "./sheets.ts"
+import { getPreExistingMatchData, getTeams, pushData } from "./sheets.ts"
 import { sheetsHeader } from "./stats.ts"
 import { wrapLog } from "./utils.ts"
 
@@ -36,7 +36,7 @@ const main = async () => {
 
 	const spreadsheetId = await promptSpreadsheetId()
 	const sheetName = await promptSheetName()
-	const teamNamesPromise = getTeamNames(sheets, sheetName, spreadsheetId)
+	const teamNamesPromise = getTeams(sheets, sheetName, spreadsheetId)
 
 	const rawDataSheetName = await promptRawDataSheetName()
 	const preExistingMatchDataPromise = getPreExistingMatchData(
@@ -67,8 +67,8 @@ const main = async () => {
 	}
 	const sortNewestFirst = await promptMatchSortOrder()
 
-	const teamNames = await wrapLog(async () => await teamNamesPromise, {
-		inProgressMsg: `Reading team names from spreadsheet`,
+	const teams = await wrapLog(async () => await teamNamesPromise, {
+		inProgressMsg: `Reading team tags and captains from spreadsheet`,
 	})
 
 	const players: TPlayer[] = await wrapLog(
@@ -105,7 +105,7 @@ const main = async () => {
 			const { didTrackMatch, matchData, matchNumber } = await checkMatch({
 				match,
 				nextMatchNumber,
-				teamNames,
+				teams,
 			})
 			if (didTrackMatch) {
 				nextMatchNumber = matchNumber + (sortNewestFirst ? -1 : 1)

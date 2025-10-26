@@ -2,7 +2,7 @@ import chalk from "chalk"
 import prompts from "prompts"
 
 import { getPromptAnswer, savePromptAnswer } from "./cache.ts"
-import { getPlacementColor, getPlayerColor } from "./colorMaps.ts"
+import { customColors, getPlacementColor, getPlayerColor } from "./colorMaps.ts"
 import { getOrScrapePlayerId, type Match } from "./fetch.ts"
 import { flattenPlayerStats, placementToReadable } from "./stats.ts"
 import { hunterIds } from "./utils.ts"
@@ -26,20 +26,50 @@ const yesNoStopStr = `(${yesNoStr} / ${chalk.red("[s]top")})`
 const validateConfirmationText = (response: string) => {
 	return ["stop", "s", "yes", "y", "no", "n"].includes(response.toLowerCase())
 }
+interface StatsPerPlayer {
+	player: string
+	teamId: string
+	teamName: string
+	placement: number
+	hero: string
+	Kills: number
+	Deaths: number
+	Assists: number
+	HeroEffectiveDamageDone: number
+	HeroEffectiveDamageTaken: number
+	HealingGiven: number
+	HealingGivenSelf: number
+}
 
 export const checkMatch = async ({
 	match,
 	nextMatchNumber,
-	teamNames,
+	teams,
 }: {
 	match: Match
 	nextMatchNumber: number
-	teamNames: string[]
+	teams: { captain: string; teamId: string; teamTag: string }[]
 }): Promise<{
 	didTrackMatch: boolean
 	matchData: (number | string)[][]
 	matchNumber: number
 }> => {
+	// Map every match-team-idx to a team using captains
+	const unfoundCaptains = new Set(teams.map((team) => team.captain))
+	const matchTeamIdxToTeamMap: {
+		[matchTeamIdx: string]: { captain: string; teamId: string; teamTag: string }
+	} = {}
+	for (const { player, team_id } of match.matchPlayers) {
+		const team = teams.find(
+			(team) => team.captain === player.unique_display_name
+		)
+		if (!team) {
+			continue
+		}
+		matchTeamIdxToTeamMap[team_id] = team
+		unfoundCaptains.delete(team.captain)
+	}
+
 	const matchStatsPerTeam: {
 		[team_id: string]: {
 			kills: number
@@ -49,20 +79,7 @@ export const checkMatch = async ({
 		}
 	} = {}
 
-	const statsPerPlayer: Array<{
-		player: string
-		teamId: string
-		teamName: string
-		placement: number
-		hero: string
-		Kills: number
-		Deaths: number
-		Assists: number
-		HeroEffectiveDamageDone: number
-		HeroEffectiveDamageTaken: number
-		HealingGiven: number
-		HealingGivenSelf: number
-	}> = []
+	const statsPerPlayer: Array<StatsPerPlayer> = []
 	for (const {
 		team_id,
 		placement,
@@ -70,11 +87,13 @@ export const checkMatch = async ({
 		player,
 		hero_asset_id,
 	} of match.matchPlayers) {
+		const team = matchTeamIdxToTeamMap[team_id]
+
 		matchStatsPerTeam[team_id] ??= {
 			kills: 0,
 			placement: placement,
 			players: [],
-			teamName: teamNames[Number(team_id)] ?? "",
+			teamName: team?.teamTag ?? "",
 		}
 		matchStatsPerTeam[team_id].kills += stats.Kills
 		matchStatsPerTeam[team_id].players.push(player.unique_display_name)
@@ -82,8 +101,8 @@ export const checkMatch = async ({
 		const entry = {
 			hero: hunterIds[hero_asset_id] ?? hero_asset_id,
 			player: player.unique_display_name,
-			teamId: team_id,
-			teamName: teamNames[Number(team_id)] ?? "",
+			teamId: team?.teamId ?? -1,
+			teamName: team?.teamTag ?? "",
 			placement,
 			...stats,
 		}
@@ -110,6 +129,12 @@ export const checkMatch = async ({
 		console.log(`${placementStr}: ${teamName} (${playersStr}) (${kills} kills)`)
 	}
 	console.log()
+
+	if (unfoundCaptains.size > 0) {
+		console.log(
+			`${chalk.yellow("WARNING: ")} failed to find captains in match: ${customColors.cyanVeryBright([...unfoundCaptains].join(", "))}\n (you probably want to skip this or else the script will break)`
+		)
+	}
 
 	const matchResponse = await prompts(
 		{
@@ -159,7 +184,7 @@ const promptPlayerTag = async (): Promise<string> => {
 			name: "playerTag",
 			message,
 			initial: initial ?? "afro#doom",
-			validate: (val: string) => val.length > 0 && val.includes("#"),
+			validate: (val: string) => val.includes("#"),
 		},
 		{ onCancel: () => process.exit(0) }
 	)

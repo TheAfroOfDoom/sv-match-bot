@@ -1,5 +1,7 @@
 import chalk from "chalk"
 
+import { customColors } from "./colorMaps.ts"
+
 export class SuperviveUUID {
 	val: string
 
@@ -64,6 +66,33 @@ export const wrapLog = async <T>(
 		process.stdout.write(`\r${chalk.red("×")}\n`)
 		throw error
 	}
+}
+
+export const validateTeamData = (
+	pairs: { captain: string; teamTag: string }[]
+): { captain: string; teamId: string; teamTag: string }[] => {
+	const invalidTeams: string[] = []
+
+	// Add numeric team tags for teams without a tag specified in the sheet
+	for (const [idx, pair] of pairs.entries()) {
+		if (pair.teamTag === undefined || pair.teamTag.trim() === "") {
+			pair.teamTag = `(${String(idx)})`
+		}
+
+		if (!pair.captain?.trim()?.includes("#")) {
+			invalidTeams.push(pair.teamTag)
+		}
+	}
+
+	if (invalidTeams.length > 0) {
+		throw new Error(
+			chalk.yellow(
+				`Invalid captains in spreadsheet:\n${customColors.cyanVeryBright(invalidTeams.join(", "))}\n(Captains must be specified and a valid player tag (e.g. afro#doom). They are case-sensitive!)`
+			)
+		)
+	}
+
+	return pairs.map((pair, idx) => ({ ...pair, teamId: String(idx) }))
 }
 
 export const hunterIds: { [hero_asset_id: string]: string } = {

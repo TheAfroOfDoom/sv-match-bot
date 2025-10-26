@@ -3,7 +3,7 @@ import type { sheets_v4 } from "googleapis"
 
 import { deleteToken } from "./googleAuth.ts"
 import { sheetsHeader } from "./stats.ts"
-import { columnToLetter, wrapLog } from "./utils.ts"
+import { columnToLetter, validateTeamData, wrapLog } from "./utils.ts"
 
 export type Sheets = sheets_v4.Sheets
 
@@ -57,20 +57,20 @@ async function getSheetRows(
 	return vals as string[][]
 }
 
-export async function getTeamNames(
+export async function getTeams(
 	sheets: Sheets,
 	sheetName: string,
 	spreadsheetId: string
-): Promise<string[]> {
-	const range = `'${sheetName}'!B3:B14`
+): Promise<{ captain: string; teamId: string; teamTag: string }[]> {
+	const range = `'${sheetName}'!B18:C29`
 	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
 	if (rows.length === 0) {
 		throw new Error(
 			"Received undefined sheet-row data (did you remember to input team names?)"
 		)
 	}
-	const teamNames = rows.map((row) => row[0])
-	return teamNames
+	const pairs = rows.map((row) => ({ captain: row[1], teamTag: row[0] }))
+	return validateTeamData(pairs)
 }
 
 export async function getPreExistingMatchData(
