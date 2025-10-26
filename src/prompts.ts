@@ -80,11 +80,11 @@ export const checkMatch = async ({
 		matchStatsPerTeam[team_id].players.push(player.unique_display_name)
 
 		const entry = {
+			hero: hunterIds[hero_asset_id] ?? hero_asset_id,
 			player: player.unique_display_name,
 			teamId: team_id,
 			teamName: teamNames[Number(team_id)] ?? "",
 			placement,
-			hero: hunterIds[hero_asset_id] ?? hero_asset_id,
 			...stats,
 		}
 		statsPerPlayer.push(entry)
