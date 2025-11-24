@@ -11,7 +11,8 @@ async function getSheetRows(
 	sheets: Sheets,
 	spreadsheetId: string,
 	range: string,
-	sheetName: string
+	sheetName: string,
+	options: sheets_v4.Params$Resource$Spreadsheets$Values$Get = {}
 ) {
 	let res
 	try {
@@ -19,6 +20,7 @@ async function getSheetRows(
 			spreadsheetId,
 			range,
 			valueRenderOption: "UNFORMATTED_VALUE",
+			...options,
 		})
 	} catch (error: any) {
 		if (error.message === "Requested entity was not found.") {
@@ -63,7 +65,9 @@ export async function getTeams(
 	spreadsheetId: string
 ): Promise<{ captain: string; teamId: string; teamTag: string }[]> {
 	const range = `'${sheetName}'!B18:C29`
-	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName)
+	const rows = await getSheetRows(sheets, spreadsheetId, range, sheetName, {
+		valueRenderOption: "FORMATTED_VALUE",
+	})
 	if (rows.length === 0) {
 		throw new Error(
 			"Received undefined sheet-row data (did you remember to input team names?)"
