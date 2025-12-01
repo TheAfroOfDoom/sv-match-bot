@@ -1,3 +1,5 @@
+import "dotenv/config"
+
 import chalk from "chalk"
 import { google } from "googleapis"
 import PrettyError from "pretty-error"
@@ -23,6 +25,7 @@ import type { TPlayer } from "./schema/Player.ts"
 import { closeBrowser, fetchNewMatchesForPlayer } from "./scrape.ts"
 import { getPreExistingMatchData, getTeams, pushData } from "./sheets.ts"
 import { sheetsHeader } from "./stats.ts"
+import { checkForUpdates } from "./update.ts"
 import { wrapLog } from "./utils.ts"
 
 const main = async () => {
@@ -30,6 +33,8 @@ const main = async () => {
 	prettyError.appendStyle({
 		"pretty-error > trace > item": { marginBottom: 0 },
 	})
+
+	await checkForUpdates()
 
 	const auth = await authorize()
 	const sheets = google.sheets({ version: "v4", auth })
